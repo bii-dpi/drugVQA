@@ -2,8 +2,6 @@ import torch
 from sklearn import metrics
 import warnings
 warnings.filterwarnings("ignore")
-torch.cuda.set_device(1)
-print('cuda size == 1')
 from trainAndTest import *
 
 def main():
