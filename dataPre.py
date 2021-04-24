@@ -27,9 +27,9 @@ class ProDataset(Dataset):
 
     def get_property_id(self, property):
         return self.property_list.index(property)
-    
-testFoldPath = './data/DUDE/dataPre/DUDE-foldTest3'
-trainFoldPath = './data/DUDE/dataPre/DUDE-foldTrain3'
+
+testFoldPath = './data/DUDE/dataPre/validation_fold'
+trainFoldPath = './data/DUDE/dataPre/training_fold'
 contactPath = './data/DUDE/contactMap'
 contactDictPath = './data/DUDE/dataPre/DUDE-contactDict'
 smileLettersPath  = './data/DUDE/voc/combinedVoc-wholeFour.voc'
@@ -42,13 +42,8 @@ print('get letters....')
 smiles_letters = getLetters(smileLettersPath)
 sequence_letters = getLetters(seqLettersPath)
 
-# testProteinList = getTestProteinList(testFoldPath)# whole foldTest
-# testProteinList = ['kpcb_2i0eA_full']# a protein of fold1Test
-testProteinList = ['tryb1_2zebA_full','mcr_2oaxE_full', 'cxcr4_3oduA_full']# protein of fold3Test
-DECOY_PATH = './data/DUDE/decoy_smile'
-ACTIVE_PATH = './data/DUDE/active_smile'
 print('get protein-seq dict....')
-dataDict = getDataDict(testProteinList,ACTIVE_PATH,DECOY_PATH,contactPath)
+dataDict = getDataDict(testFoldPath)
 
 N_CHARS_SMI = len(smiles_letters)
 N_CHARS_SEQ = len(sequence_letters)
@@ -93,6 +88,6 @@ trainArgs['clip'] = True
 trainArgs['criterion'] = torch.nn.BCELoss()
 trainArgs['optimizer'] = torch.optim.Adam(trainArgs['model'].parameters(),lr=trainArgs['lr'])
 trainArgs['doSave'] = True
-trainArgs['saveNamePre'] = 'DUDE30Res-fold3-'
+trainArgs['saveNamePre'] = 'Complete-'
 
 print('train args over...')

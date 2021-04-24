@@ -35,7 +35,7 @@ def line2voc_arr(line,letters):
     char_list = re.split(regex, line)
     for li, char in enumerate(char_list):
         if char.startswith('['):
-               arr.append(letterToIndex(char,letters)) 
+               arr.append(letterToIndex(char,letters))
         else:
             chars = [unit for unit in char]
 
@@ -116,15 +116,8 @@ def getProtein(path,contactMapName,contactMap = True):
     else:
         return seq
 
-def getTrainDataSet(trainFoldPath):
-    with open(trainFoldPath, 'r') as f:
-        trainCpi_list = f.read().strip().split('\n')
-    trainDataSet = [cpi.strip().split() for cpi in trainCpi_list]
-    return trainDataSet#[[smiles, sequence, interaction],.....]
-def getTestProteinList(testFoldPath):
-    testProteinList = readLinesStrip(open(testFoldPath).readlines())[0].split()
-    return testProteinList#['kpcb_2i0eA_full','fabp4_2nnqA_full',....]
-def getSeqContactDict(contactPath,contactDictPath):# make a seq-contactMap dict 
+
+def getSeqContactDict(contactPath,contactDictPath):# make a seq-contactMap dict
     contactDict = open(contactDictPath).readlines()
     seqContactDict = {}
     for data in contactDict:
@@ -132,30 +125,33 @@ def getSeqContactDict(contactPath,contactDictPath):# make a seq-contactMap dict
         seq,contactMap = getProtein(contactPath,contactMapName)
         contactmap_np = [list(map(float, x.strip(' ').split(' '))) for x in contactMap]
         feature2D = np.expand_dims(contactmap_np, axis=0)
-        feature2D = torch.FloatTensor(feature2D)    
+        feature2D = torch.FloatTensor(feature2D)
         seqContactDict[seq] = feature2D
     return seqContactDict
 def getLetters(path):
     with open(path, 'r') as f:
         chars = f.read().split()
     return chars
-def getDataDict(testProteinList,activePath,decoyPath,contactPath):
-    dataDict = {}
-    for x in testProteinList:#'xiap_2jk7A_full'
-        xData = []
-        protein = x.split('_')[0]
-        print(protein)
-        proteinActPath = activePath+"/"+protein+"_actives_final.ism"
-        proteinDecPath = decoyPath+"/"+protein+"_decoys_final.ism"
-        act = open(proteinActPath,'r').readlines()
-        dec = open(proteinDecPath,'r').readlines()
-        actives = [[x.split(' ')[0],1] for x in act] ######
-        decoys = [[x.split(' ')[0],0] for x in dec]# test
-        seq = getProtein(contactPath,x,contactMap = False)
-        for i in range(len(actives)):
-            xData.append([actives[i][0],seq,actives[i][1]])
-        for i in range(len(decoys)):
-            xData.append([decoys[i][0],seq,decoys[i][1]])
-        print(len(xData))
-        dataDict[x] = xData
+
+def getTrainDataSet(trainFoldPath):
+    with open(trainFoldPath, 'r') as f:
+        trainCpi_list = f.read().strip().split('\n')
+    trainDataSet = [cpi.strip().split() for cpi in trainCpi_list]
+    print(trainDataSet)
+    return trainDataSet#[[smiles, sequence, interaction],.....]
+
+def getDataDict(testFoldPath):
+    # Load target name-sequence mapping dictionary.
+    with open(f"data/DUDE/dataPre/DUDE-contactDict") as f:
+        contact_dict = dict([line.split(":") for line in f.readlines()])
+    with open(testFoldPath, 'r') as f:
+        testCpi_list = f.read().strip().split('\n')
+    testDataSet = [cpi.strip().split() for cpi in testCpi_list]
+    dataDict = dict()
+    for target_name in contact_dict.values():
+        dataDict[target_name] = []
+        for example in testDataSet:
+            if contact_dict[example[1]] == target_name:
+                dataDict.append(example)
+    print(dataDict)
     return dataDict

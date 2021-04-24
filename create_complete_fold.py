@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-TRAINING_RESAMPLE_TO = 2
+TRAINING_RESAMPLE_TO = 1
 VALIDATION_PROP = 0.2
 SEED = 12345
 
