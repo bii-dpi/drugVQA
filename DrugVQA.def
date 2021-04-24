@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
+From: nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 
 %post
     # Downloads the latest package lists (important).
@@ -18,4 +18,5 @@ From: nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
     rm -rf /var/lib/apt/lists/*
     # Install Python modules.
     pip3 install numpy==1.16.4 scikit-learn
-    pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.0-cp36-cp36m-linux_x86_64.whl
+    #pip3 install https://download.pytorch.org/whl/cu100/torch-1.0.0-cp36-cp36m-linux_x86_64.whl
+    pip3 install torch==1.2.0 torchvision==0.4.0
