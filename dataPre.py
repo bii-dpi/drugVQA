@@ -87,7 +87,26 @@ trainArgs['penal_coeff'] = 0.03
 trainArgs['clip'] = True
 trainArgs['criterion'] = torch.nn.BCELoss()
 trainArgs['optimizer'] = torch.optim.Adam(trainArgs['model'].parameters(),lr=trainArgs['lr'])
-trainArgs['doSave'] = True
+trainArgs['doSave'] = False
 trainArgs['saveNamePre'] = 'Complete-'
 
 print('train args over...')
+
+print('test loader....')
+# testDataSet:[[smile,seq,label],....]    seqContactDict:{seq:contactMap,....}
+testDataSet = getTrainDataSet(testFoldPath)
+test_dataset = ProDataset(dataSet = testDataSet,seqContactDict = seqContactDict)
+test_loader = DataLoader(dataset = test_dataset,batch_size=1, shuffle=True,drop_last = True)
+
+print('test args...')
+
+testArgs = {}
+testArgs['test_loader'] = test_loader
+testArgs['test_proteins'] = list(dataDict.keys())
+testArgs['testDataDict'] = dataDict
+testArgs['seqContactDict'] = seqContactDict
+testArgs['use_regularizer'] = False
+testArgs['penal_coeff'] = 0.03
+testArgs['criterion'] = torch.nn.BCELoss()
+
+print('test args over...')

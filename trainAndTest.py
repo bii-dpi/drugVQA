@@ -74,7 +74,7 @@ def train(trainArgs):
         
         if(trainArgs['doSave']):
             torch.save(attention_model.state_dict(), './model_pkl/DUDE/'+trainArgs['saveNamePre']+'%d.pkl'%(i+1))
-        if(trainArgs['doTest'] and i == trainArgs['epochs'] - 1):
+        if(trainArgs['doTest']):
             testArgs = {}
             testArgs['model'] = attention_model
             testArgs['test_proteins'] = trainArgs['test_proteins']
@@ -116,6 +116,7 @@ def testPerProtein(testArgs):
         testAcc,testRecall,testPrecision,testAuc,testLoss,all_pred,all_target,roce1,roce2,roce3,roce4 = test(testArgs)
         result[x] = [testAcc,testRecall,testPrecision,testAuc,testLoss,all_pred,all_target,roce1,roce2,roce3,roce4]
     return result
+
 def test(testArgs):
     test_loader = testArgs['test_loader']
     criterion = testArgs["criterion"]
