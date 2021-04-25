@@ -137,7 +137,6 @@ def getTrainDataSet(trainFoldPath):
     with open(trainFoldPath, 'r') as f:
         trainCpi_list = f.read().strip().split('\n')
     trainDataSet = [cpi.strip().split() for cpi in trainCpi_list]
-    print(trainDataSet)
     return trainDataSet#[[smiles, sequence, interaction],.....]
 
 def getDataDict(testFoldPath):
@@ -152,6 +151,8 @@ def getDataDict(testFoldPath):
         dataDict[target_name] = []
         for example in testDataSet:
             if contact_dict[example[1]] == target_name:
-                dataDict.append(example)
-    print(dataDict)
+                dataDict[target_name].append(example)
+    for target_name in contact_dict.values():
+        if not dataDict[target_name]:
+            dataDict.pop(target_name, None)
     return dataDict

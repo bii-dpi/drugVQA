@@ -61,7 +61,7 @@ def train(trainArgs):
             optimizer.step()
             n_batches+=1
             if batch_idx %1000==0: 
-                print(batch_idx)
+                print(batch_idx / len(train_loader))
                 
         avg_loss = total_loss/n_batches
         acc = correct.numpy()/(len(train_loader.dataset))
@@ -74,7 +74,7 @@ def train(trainArgs):
         
         if(trainArgs['doSave']):
             torch.save(attention_model.state_dict(), './model_pkl/DUDE/'+trainArgs['saveNamePre']+'%d.pkl'%(i+1))
-        if(trainArgs['doTest']):
+        if(trainArgs['doTest'] and i == trainArgs['epochs'] - 1):
             testArgs = {}
             testArgs['model'] = attention_model
             testArgs['test_proteins'] = trainArgs['test_proteins']
