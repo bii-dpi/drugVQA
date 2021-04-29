@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+
+
+%post
+    # Downloads the latest package lists (important).
+    apt-get update -y
+    # Runs apt-get while ensuring that there are no user prompts that would
+    # cause the build process to hang.
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends wget
+    # Reduce the size of the image by deleting the package lists we downloaded,
+    # which are useless now.
+    rm -rf /var/lib/apt/lists/*
+    # Install Miniconda3.
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3
+    echo "PATH=/opt/miniconda3/bin:\$PATH" >> ~/.bashrc
+    echo "export PATH" >> ~/.bashrc
+    rm Miniconda3-latest-Linux-x86_64.sh
+
+%environment
+    PATH=$PATH:/opt/miniconda3/bin
+    export PATH
