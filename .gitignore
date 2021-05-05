@@ -1,3 +1,6 @@
 *.swp
 DrugVQA.sif
 *.pyc
+src/.DS_Store
+model_pkl/.DS_Store
+.DS_Store

@@ -8,6 +8,7 @@ from progressbar import progressbar
 
 testArgs['saveNamePre'] = "single_"
 
+print("Validating...")
 for i in progressbar(range(trainArgs['epochs'], 0, -2)):
     curr_path = f"../model_pkl/DUDE/{testArgs['saveNamePre']}{i}.pkl"
     testArgs['model'] = DrugVQA(modelArgs,block = ResidualBlock).cuda()

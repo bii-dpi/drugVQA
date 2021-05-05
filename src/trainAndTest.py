@@ -123,8 +123,6 @@ def train(trainArgs):
    
 
 def test(testArgs, epoch):
-    print("Validating...")
-
     test_loader = testArgs['test_loader']
     criterion = testArgs["criterion"]
     attention_model = testArgs['model']
