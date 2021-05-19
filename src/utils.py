@@ -1,4 +1,5 @@
 import re
+import os
 import torch
 import numpy as np
 from torch.autograd import Variable
@@ -6,12 +7,8 @@ from torch.utils.data import Dataset, DataLoader
 
 
 
-def create_variable(tensor):
-    # Do cuda() before wrapping with variable
-    if torch.cuda.is_available():
-        return Variable(tensor.cuda())
-    else:
-        return Variable(tensor)
+def create_variable(tensor, device):
+    return tensor.to(device)
 
 
 def replace_halogen(string):
@@ -24,18 +21,18 @@ def replace_halogen(string):
 
 
 # Create necessary variables, lengths, and target
-def make_variables(lines, properties, letters):
+def make_variables(lines, properties, letters, device):
     sequence_and_length = [line2voc_arr(line, letters) for line in lines]
     vectorized_seqs = [sl[0] for sl in sequence_and_length]
     seq_lengths = torch.LongTensor([sl[1] for sl in sequence_and_length])
-    return pad_sequences(vectorized_seqs, seq_lengths, properties)
+    return pad_sequences(vectorized_seqs, seq_lengths, properties, device)
 
 
-def make_variables_seq(lines, letters):
+def make_variables_seq(lines, letters, device):
     sequence_and_length = [line2voc_arr(line, letters) for line in lines]
     vectorized_seqs = [sl[0] for sl in sequence_and_length]
     seq_lengths = torch.LongTensor([sl[1] for sl in sequence_and_length])
-    return pad_sequences_seq(vectorized_seqs, seq_lengths)
+    return pad_sequences_seq(vectorized_seqs, seq_lengths, device)
 
 
 def line2voc_arr(line, letters):
@@ -59,7 +56,7 @@ def letterToIndex(letter, smiles_letters):
 
 
 # pad sequences and sort the tensor
-def pad_sequences(vectorized_seqs, seq_lengths, properties):
+def pad_sequences(vectorized_seqs, seq_lengths, properties, device):
     seq_tensor = torch.zeros((len(vectorized_seqs), seq_lengths.max())).long()
     for idx, (seq, seq_len) in enumerate(zip(vectorized_seqs, seq_lengths)):
         seq_tensor[idx, :seq_len] = torch.LongTensor(seq)
@@ -74,10 +71,12 @@ def pad_sequences(vectorized_seqs, seq_lengths, properties):
         target = target[perm_idx]
     # Return variables
     # DataParallel requires everything to be a Variable
-    return create_variable(seq_tensor),create_variable(seq_lengths), create_variable(target)
+    return create_variable(seq_tensor, device), \
+            create_variable(seq_lengths, device), \
+            create_variable(target, device)
 
 
-def pad_sequences_seq(vectorized_seqs, seq_lengths):
+def pad_sequences_seq(vectorized_seqs, seq_lengths, device):
     seq_tensor = torch.zeros((len(vectorized_seqs), seq_lengths.max())).long()
     for idx, (seq, seq_len) in enumerate(zip(vectorized_seqs, seq_lengths)):
         seq_tensor[idx, :seq_len] = torch.LongTensor(seq)
@@ -88,7 +87,7 @@ def pad_sequences_seq(vectorized_seqs, seq_lengths):
     seq_tensor = seq_tensor[perm_idx]
     # Return variables
     # DataParallel requires everything to be a Variable
-    return create_variable(seq_tensor), create_variable(seq_lengths)
+    return create_variable(seq_tensor, device), create_variable(seq_lengths, device)
 
 
 def construct_vocabulary(smiles_list, fname):
@@ -211,6 +210,15 @@ class ProDataset(Dataset):
     def get_property_id(self, property):
         return self.property_list.index(property)
 
+
+def load_latest_model(fname_prefix, epochs, model, device):
+    for i in range(1, epochs + 1):
+        if not os.path.isfile(f"../model_pkl/DUDE/{fname_prefix}{i}.pkl"):
+            break
+    model.load_state_dict(torch.load(f"../model_pkl/DUDE/{fname_prefix}{i - 1}.pkl"))
+    print(f"Training until epoch {i - 1} completed.")
+    return model.to(device)
+    
 
 def get_ROCE(predList, targetList, roceRate):
     p = sum(targetList)

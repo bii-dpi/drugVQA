@@ -5,6 +5,7 @@ from progressbar import progressbar
 
 
 def train(train_args):
+    """Train the model."""
     device = train_args["device"]
     train_loader = train_args["train_loader"]
     optimizer = train_args["optimizer"]
@@ -19,9 +20,9 @@ def train(train_args):
         all_target = np.array([])
 
         for lines, contactmap, properties in train_loader:  
-            input, seq_lengths, y = make_variables(lines, properties, smiles_letters)
+            input, seq_lengths, y = make_variables(lines, properties, smiles_letters, device)
             attention_model.hidden_state = attention_model.init_hidden()
-            contactmap = create_variable(contactmap)
+            contactmap = contactmap.to(device)
             y_pred, att = attention_model(input, contactmap)
 
             #penalization AAT - I
@@ -33,7 +34,6 @@ def train(train_args):
                 penal = attention_model.l2_matrix_norm(att@attT - identity)
 
             #binary classification
-            #Adding a very small value to prevent BCELoss from outputting NaN's
             correct += torch.eq(torch.round(y_pred.type(torch.DoubleTensor).squeeze(1)),
                                             y.type(torch.DoubleTensor)).data.sum()
             all_pred=np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()), axis = 0)
@@ -49,9 +49,9 @@ def train(train_args):
 
             total_loss += loss.data
             optimizer.zero_grad()
-            loss.backward() #retain_graph=True
+            loss.backward() 
        
-            #gradient clipping
+            # Gradient clipping
             if train_args["clip"]:
                 torch.nn.utils.clip_grad_norm(attention_model.parameters(), 0.5)
 
@@ -71,15 +71,15 @@ def train(train_args):
         roce_4 = getROCE(all_pred, all_target, 5)
 
         torch.save(attention_model.state_dict(),
-                    f"../model_pkl/DUDE/{train_args["fname_prefix"]}{i + 1}.pkl")
+                    f"../model_pkl/DUDE/{train_args['fname_prefix']}{i + 1}.pkl")
 
         with open(f"../results/{train_args['fname_prefix']}train_results.csv", "a") as f:
-            f.write((f"{accuracy}, {recall}, {precision}, {AUC}, {AUPR}, {avg_loss}, "
+            f.write((f"{epoch}, {accuracy}, {recall}, {precision}, {AUC}, {AUPR}, {avg_loss}, "
                         f"{roce_1}, {roce_2}, {roce_3}, {roce_4}\n"))
     
    
-
 def validate(validate_args, epoch):
+    """Validate the model."""
     device = validate_args["device"]
     validate_loader = validate_args["validate_loader"]
     criterion = validate_args["criterion"]
@@ -93,7 +93,7 @@ def validate(validate_args, epoch):
 
     with torch.no_grad():
         for lines, contactmap, properties in validate_loader:
-            input, seq_lengths, y = make_variables(lines, properties, smiles_letters)
+            input, seq_lengths, y = make_variables(lines, properties, smiles_letters, device)
             attention_model.hidden_state = attention_model.init_hidden()
             contactmap = contactmap.to(device)
             y_pred, att = attention_model(input, contactmap)

@@ -64,9 +64,13 @@ train_args["train_loader"] = train_loader
 train_args["seq_contact_dict"] = seq_contact_dict
 train_args["epochs"] = 40
 
-train_args["model"] = DrugVQA(model_args, block=ResidualBlock).to(device)
-train_args["fname_prefix"] = f"{PREFIX}_{FOLD}"
+train_args["fname_prefix"] = f"{PREFIX}_{FOLD}_"
 train_args["device"] = device
+train_args["model"] = DrugVQA(model_args, block=ResidualBlock)
+train_args["model"] = load_latest_model(train_args["fname_prefix"],
+                                        train_args["epochs"],
+                                        train_args["model"],
+                                        device)
 
 train_args["lr"] = 0.0007
 train_args["use_regularizer"] = False
@@ -82,8 +86,7 @@ validate_args = {}
 validate_args["validate_loader"] = validate_loader
 validate_args["seq_contact_dict"] = seq_contact_dict
 
-validate_args["model"] = DrugVQA(model_args, block=ResidualBlock).to(device)
-validate_args["fname_prefix"] = f"{PREFIX}_{FOLD}"
+validate_args["fname_prefix"] = f"{PREFIX}_{FOLD}_"
 validate_args["device"] = device
 
 validate_args["use_regularizer"] = False
