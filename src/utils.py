@@ -211,3 +211,22 @@ class ProDataset(Dataset):
     def get_property_id(self, property):
         return self.property_list.index(property)
 
+
+def get_ROCE(predList, targetList, roceRate):
+    p = sum(targetList)
+    n = len(targetList) - p
+    predList = [[index, x] for index, x in enumerate(predList)]
+    predList = sorted(predList, key = lambda x:x[1], reverse = True)
+    tp1 = 0
+    fp1 = 0
+    maxIndexs = []
+    for x in predList:
+        if(targetList[x[0]] == 1):
+            tp1 += 1
+        else:
+            fp1 += 1
+            if(fp1>((roceRate * n)/100)):
+                break
+    roce = (tp1 * n)/(p*fp1)
+    return roce
+

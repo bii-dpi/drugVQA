@@ -74,6 +74,8 @@ class DrugVQA(nn.Module):
         Returns:
             self
         """
+        self.device = args["device"]
+
         super(DrugVQA, self).__init__()
         self.batch_size = args['batch_size']
         self.lstm_hid_dim = args['lstm_hid_dim']
@@ -102,7 +104,7 @@ class DrugVQA(nn.Module):
 
         self.hidden_state = self.init_hidden()
         self.seq_hidden_state = self.init_hidden()
-        
+
     def softmax(self, input, axis=1):
         """
         Softmax applied to axis=n
@@ -122,8 +124,8 @@ class DrugVQA(nn.Module):
         return soft_max_nd.transpose(axis, len(input_size)-1)
 
     def init_hidden(self):
-        return (Variable(torch.zeros(4, self.batch_size, self.lstm_hid_dim).cuda()),
-                Variable(torch.zeros(4, self.batch_size, self.lstm_hid_dim)).cuda())
+        return torch.zeros(4, self.batch_size, self.lstm_hid_dim).to(self.device),
+                torch.zeros(4, self.batch_size, self.lstm_hid_dim)).to(self.device)
     
     def make_layer(self, block, out_channels, blocks, stride=1):
         downsample = None
