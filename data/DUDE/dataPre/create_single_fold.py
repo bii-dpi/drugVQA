@@ -48,20 +48,20 @@ with open(f"DUDE-contactDict") as f:
 
 
 # Populate the dictionary with all examples.
-example_dict = {"training": {"actives": [], "decoys": []},
-                    "validation": {"actives": [], "decoys": []}}
+example_dict = {"train": {"actives": [], "decoys": []},
+                    "val": {"actives": [], "decoys": []}}
 for target in all_targets:
     curr_actives = get_examples(target, "actives")
     curr_decoys = get_examples(target, "decoys")
 
     num_training_actives = int(len(curr_actives) * (1 - VALIDATION_PROP))
 
-    example_dict["training"]["actives"] += \
+    example_dict["train"]["actives"] += \
         curr_actives[:num_training_actives]
-    example_dict["validation"]["actives"] += \
+    example_dict["val"]["actives"] += \
         curr_actives[num_training_actives:]
 
-    example_dict["training"]["decoys"] += \
+    example_dict["train"]["decoys"] += \
         curr_decoys[:int(num_training_actives * TRAINING_RESAMPLE_TO)]
 
     # Keep 50 times the number of validation decoys as actives.
@@ -69,19 +69,19 @@ for target in all_targets:
     num_decoys_needed = (len(curr_actives) - num_training_actives) * 50
     if len(decoys_remaining) < num_decoys_needed:
         num_decoys_needed = -1
-    example_dict["validation"]["decoys"] += \
+    example_dict["val"]["decoys"] += \
         decoys_remaining[:num_decoys_needed]
 
 
-print(f"Training ratio: {len(example_dict['training']['decoys']) / len(example_dict['training']['actives']):.2f}")
-print(f"Validation ratio: {len(example_dict['validation']['decoys']) / len(example_dict['validation']['actives']):.2f}")
+print(f"Training ratio: {len(example_dict['train']['decoys']) / len(example_dict['train']['actives']):.2f}")
+print(f"Validation ratio: {len(example_dict['val']['decoys']) / len(example_dict['val']['actives']):.2f}")
 
 
-for key_1 in ["training", "validation"]:
+for key_1 in ["train", "val"]:
     for key_2 in ["actives", "decoys"]:
         np.random.shuffle(example_dict[key_1][key_2])
 
 
 # Integrate actives and decoys, shuffle them, and then write the folds
-write_shuffled_data(example_dict, "training")
-write_shuffled_data(example_dict, "validation")
+write_shuffled_data(example_dict, "train")
+write_shuffled_data(example_dict, "val")

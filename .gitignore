@@ -4,9 +4,10 @@ DrugVQA.sif
 src/.DS_Store
 model_pkl/.DS_Store
 .DS_Store
-drugVQA_multi/data/DUDE/dataPre/cv_1_train_fold
-drugVQA_multi/data/DUDE/dataPre/cv_1_val_fold
-drugVQA_multi/data/DUDE/dataPre/cv_2_train_fold
-drugVQA_multi/data/DUDE/dataPre/cv_2_val_fold
-drugVQA_multi/data/DUDE/dataPre/cv_3_train_fold
-drugVQA_multi/data/DUDE/dataPre/cv_3_val_fold
+data/DUDE/dataPre/cv_1_train_fold
+data/DUDE/dataPre/cv_1_val_fold
+data/DUDE/dataPre/cv_2_train_fold
+data/DUDE/dataPre/cv_2_val_fold
+data/DUDE/dataPre/cv_3_train_fold
+data/DUDE/dataPre/cv_3_val_fold
+data/DUDE/dataPre/single_*

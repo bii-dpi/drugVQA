@@ -54,10 +54,9 @@ def write_train_fold(fold_index, train_fold_proteins, contact_dict):
         curr_actives = get_examples(target, "actives", contact_dict)
         curr_decoys = get_examples(target, "decoys", contact_dict)
 
-        num_training_actives = int(len(curr_actives) * (1 - VALIDATION_PROP))
+        num_training_actives = len(curr_actives)
 
-        example_dict["actives"] += \
-            curr_actives[:num_training_actives]
+        example_dict["actives"] += curr_actives
         example_dict["decoys"] += \
             curr_decoys[:int(num_training_actives * TRAINING_RESAMPLE_TO)]
 
@@ -66,7 +65,7 @@ def write_train_fold(fold_index, train_fold_proteins, contact_dict):
     for interaction_type in ["actives", "decoys"]:
         np.random.shuffle(example_dict[interaction_type])
 
-    write_shuffled_data(example_dict, f"cv_train_{fold_index}")
+    write_shuffled_data(example_dict, f"cv_{fold_index}_train_fold")
 
 
 def write_val_fold(fold_index, val_fold_proteins, contact_dict):
@@ -76,18 +75,15 @@ def write_val_fold(fold_index, val_fold_proteins, contact_dict):
         curr_actives = get_examples(target, "actives", contact_dict)
         curr_decoys = get_examples(target, "decoys", contact_dict)
 
-        num_training_actives = int(len(curr_actives) * (1 - VALIDATION_PROP))
+        num_actives_needed = len(curr_actives)
+        num_decoys_needed = len(curr_actives) * 50
 
-        example_dict["actives"] += \
-            curr_actives[num_training_actives:]
+        if num_decoys_needed > len(curr_decoys):
+            num_decoys_needed = len(curr_decoys)
+            num_actives_needed = int(len(curr_decoys) / 50)
 
-        # Keep 50 times the number of validation decoys as actives.
-        decoys_remaining = curr_decoys[int(num_training_actives * TRAINING_RESAMPLE_TO):]
-        num_decoys_needed = (len(curr_actives) - num_training_actives) * 50
-        if len(decoys_remaining) < num_decoys_needed:
-            num_decoys_needed = -1
-        example_dict["decoys"] += \
-            decoys_remaining[:num_decoys_needed]
+        example_dict["actives"] += curr_actives[:num_actives_needed]
+        example_dict["decoys"] += curr_decoys[:num_decoys_needed]
 
     print(f"Validation ratio: {len(example_dict['decoys']) / len(example_dict['actives']):.2f}")
 
@@ -95,7 +91,7 @@ def write_val_fold(fold_index, val_fold_proteins, contact_dict):
         np.random.shuffle(example_dict[interaction_type])
 
     # Integrate actives and decoys, shuffle them, and then write the folds
-    write_shuffled_data(example_dict, f"cv_val_{fold_index}")
+    write_shuffled_data(example_dict, f"cv_{fold_index}_val_fold")
 
 
 def create_cv_val_folds(fold_index):
