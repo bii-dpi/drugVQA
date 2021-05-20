@@ -215,9 +215,10 @@ def load_latest_model(fname_prefix, epochs, model, device):
     for i in range(1, epochs + 1):
         if not os.path.isfile(f"../model_pkl/DUDE/{fname_prefix}{i}.pkl"):
             break
-    model.load_state_dict(torch.load(f"../model_pkl/DUDE/{fname_prefix}{i - 1}.pkl"))
+    if i > 1:
+        model.load_state_dict(torch.load(f"../model_pkl/DUDE/{fname_prefix}{i - 1}.pkl"))
     print(f"Training until epoch {i - 1} completed.")
-    return model.to(device)
+    return model.to(device), i - 1
     
 
 def get_ROCE(predList, targetList, roceRate):

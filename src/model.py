@@ -124,8 +124,8 @@ class DrugVQA(nn.Module):
         return soft_max_nd.transpose(axis, len(input_size)-1)
 
     def init_hidden(self):
-        return torch.zeros(4, self.batch_size, self.lstm_hid_dim).to(self.device),
-                torch.zeros(4, self.batch_size, self.lstm_hid_dim)).to(self.device)
+        return torch.zeros(4, self.batch_size, self.lstm_hid_dim).to(self.device), \
+                torch.zeros(4, self.batch_size, self.lstm_hid_dim).to(self.device)
     
     def make_layer(self, block, out_channels, blocks, stride=1):
         downsample = None
@@ -167,6 +167,7 @@ class DrugVQA(nn.Module):
         
         sscomplex = torch.cat([avg_sentence_embed, avg_seq_embed], dim=1) 
         sscomplex = F.relu(self.linear_final_step(sscomplex))
+        print(sscomplex.shape)
         
         if not bool(self.type):
             output = F.sigmoid(self.linear_final(sscomplex))

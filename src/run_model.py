@@ -13,7 +13,7 @@ def train(train_args):
     attention_model = train_args["model"]
     attention_model.train()
 
-    for i in progressbar(range(train_args["epochs"])):
+    for i in progressbar(range(train_args["trained_to"], train_args["epochs"])):
         total_loss = 0
         correct = 0
         all_pred = np.array([])
@@ -65,16 +65,16 @@ def train(train_args):
         AUPR = metrics.average_precision_score(all_target, all_pred)
         avg_loss = total_loss.item() / len(train_loader.dataset)
 
-        roce_1 = getROCE(all_pred, all_target, 0.5)
-        roce_2 = getROCE(all_pred, all_target, 1)
-        roce_3 = getROCE(all_pred, all_target, 2)
-        roce_4 = getROCE(all_pred, all_target, 5)
+        roce_1 = get_ROCE(all_pred, all_target, 0.5)
+        roce_2 = get_ROCE(all_pred, all_target, 1)
+        roce_3 = get_ROCE(all_pred, all_target, 2)
+        roce_4 = get_ROCE(all_pred, all_target, 5)
 
         torch.save(attention_model.state_dict(),
                     f"../model_pkl/DUDE/{train_args['fname_prefix']}{i + 1}.pkl")
 
         with open(f"../results/{train_args['fname_prefix']}train_results.csv", "a") as f:
-            f.write((f"{epoch}, {accuracy}, {recall}, {precision}, {AUC}, {AUPR}, {avg_loss}, "
+            f.write((f"{i + 1}, {accuracy}, {recall}, {precision}, {AUC}, {AUPR}, {avg_loss}, "
                         f"{roce_1}, {roce_2}, {roce_3}, {roce_4}\n"))
     
    
@@ -121,10 +121,10 @@ def validate(validate_args, epoch):
     AUPR = metrics.average_precision_score(all_target, all_pred)
     loss = total_loss.item() / len(validate_loader)
 
-    roce_1 = getROCE(all_pred, all_target, 0.5)
-    roce_2 = getROCE(all_pred, all_target, 1)
-    roce_3 = getROCE(all_pred, all_target, 2)
-    roce_4 = getROCE(all_pred, all_target, 5)
+    roce_1 = get_ROCE(all_pred, all_target, 0.5)
+    roce_2 = get_ROCE(all_pred, all_target, 1)
+    roce_3 = get_ROCE(all_pred, all_target, 2)
+    roce_4 = get_ROCE(all_pred, all_target, 5)
 
 
     with open(f"../results/{validate_args['fname_prefix']}validate_results.csv", "a") as f:

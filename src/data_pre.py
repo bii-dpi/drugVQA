@@ -1,10 +1,13 @@
 from model import *
 from utils import *
+import torch.utils.data as data_utils
 
+
+#indices = torch.arange(100)
 
 PREFIX = "orig"
 FOLD = "cv_1"
-CUDA_NUM = 0
+CUDA_NUM = 1
 device = torch.device(f"cuda:{CUDA_NUM}")
 print(f"Fold {FOLD} on CUDA {CUDA_NUM}")
 
@@ -29,7 +32,7 @@ model_args["device"] = device
 
 
 # Data
-contact_path = "../data/DUDE/contactMap"
+contact_path = "../data/DUDE/contact_map"
 contact_dict_path = "../data/DUDE/data_pre/DUDE-contactDict"
 seq_contact_dict = getSeqContactDict(contact_path, contact_dict_path)
 
@@ -42,19 +45,19 @@ N_CHARS_SEQ = len(sequence_letters)
 
 train_fold_path = f"../data/DUDE/data_pre/{FOLD}_train_fold"
 # train_dataset: [[smile, seq, label], ....]    seq_contact_dict:{seq:contactMap,....}
-train_dataset = getTrainDataset(train_fold_path)
+train_dataset = getTrainDataSet(train_fold_path)
 train_dataset = ProDataset(dataSet=train_dataset, seqContactDict=seq_contact_dict)
+#train_dataset = data_utils.Subset(train_dataset, indices)
 train_loader = DataLoader(dataset=train_dataset, batch_size=model_args["batch_size"],
                             shuffle=True, drop_last = True)
-train_loader = train_loader[:1000]
 
 validate_fold_path = f"../data/DUDE/data_pre/{FOLD}_val_fold"
 # validate_dataset: [[smile, seq, label],....]    seq_contact_dict:{seq:contactMap,....}
 validate_dataset = getTrainDataSet(validate_fold_path)
 validate_dataset = ProDataset(dataSet=validate_dataset, seqContactDict=seq_contact_dict)
+#validate_dataset = data_utils.Subset(validate_dataset, indices)
 validate_loader = DataLoader(dataset=validate_dataset, batch_size=model_args["batch_size"],
                                 shuffle=True, drop_last = True)
-validate_loader = validate_loader[:1000]
 
 
 # Training arguments
@@ -67,7 +70,7 @@ train_args["epochs"] = 40
 train_args["fname_prefix"] = f"{PREFIX}_{FOLD}_"
 train_args["device"] = device
 train_args["model"] = DrugVQA(model_args, block=ResidualBlock)
-train_args["model"] = load_latest_model(train_args["fname_prefix"],
+train_args["model"], train_args["trained_to"] = load_latest_model(train_args["fname_prefix"],
                                         train_args["epochs"],
                                         train_args["model"],
                                         device)
