@@ -2,14 +2,19 @@ from model import *
 from utils import *
 import torch.utils.data as data_utils
 
+SEED_INDEX = 2
 
 #indices = torch.arange(100)
+SEED = [87459307486392109,
+        48674128193724691,
+        71947128564786214]
+torch.manual_seed(SEED[SEED_INDEX])
 
-PREFIX = "orig"
+PREFIX = f"orig_{SEED[SEED_INDEX]}"
 FOLD = "cv_1"
 CUDA_NUM = 1
 device = torch.device(f"cuda:{CUDA_NUM}")
-print(f"Fold {FOLD} on CUDA {CUDA_NUM}")
+print(f"Fold {FOLD} on CUDA {CUDA_NUM} with seed {SEED[SEED_INDEX]}.")
 
 
 # Model args
@@ -49,7 +54,7 @@ train_dataset = getTrainDataSet(train_fold_path)
 train_dataset = ProDataset(dataSet=train_dataset, seqContactDict=seq_contact_dict)
 #train_dataset = data_utils.Subset(train_dataset, indices)
 train_loader = DataLoader(dataset=train_dataset, batch_size=model_args["batch_size"],
-                            shuffle=True, drop_last = True)
+                            drop_last=True, shuffle=True)
 
 validate_fold_path = f"../data/DUDE/data_pre/{FOLD}_val_fold"
 # validate_dataset: [[smile, seq, label],....]    seq_contact_dict:{seq:contactMap,....}
@@ -57,7 +62,7 @@ validate_dataset = getTrainDataSet(validate_fold_path)
 validate_dataset = ProDataset(dataSet=validate_dataset, seqContactDict=seq_contact_dict)
 #validate_dataset = data_utils.Subset(validate_dataset, indices)
 validate_loader = DataLoader(dataset=validate_dataset, batch_size=model_args["batch_size"],
-                                shuffle=True, drop_last = True)
+                                drop_last=True, shuffle=True)
 
 
 # Training arguments
@@ -65,7 +70,7 @@ train_args = {}
 
 train_args["train_loader"] = train_loader
 train_args["seq_contact_dict"] = seq_contact_dict
-train_args["epochs"] = 40
+train_args["epochs"] = 50
 
 train_args["fname_prefix"] = f"{PREFIX}_{FOLD}_"
 train_args["device"] = device
@@ -81,6 +86,7 @@ train_args["penal_coeff"] = 0.03
 train_args["clip"] = True
 train_args["criterion"] = torch.nn.BCELoss()
 train_args["optimizer"] = torch.optim.Adam(train_args['model'].parameters(), lr=train_args['lr'])
+train_args["seed"] = SEED[SEED_INDEX]
 
 
 # Validation arguments

@@ -13,7 +13,10 @@ def train(train_args):
     attention_model = train_args["model"]
     attention_model.train()
 
+    #xxx
     for i in progressbar(range(train_args["trained_to"], train_args["epochs"])):
+        torch.manual_seed(train_args["seed"])
+
         total_loss = 0
         correct = 0
         all_pred = np.array([])
@@ -24,6 +27,7 @@ def train(train_args):
             attention_model.hidden_state = attention_model.init_hidden()
             contactmap = contactmap.to(device)
             y_pred, att = attention_model(input, contactmap)
+            y_pred = y_pred.clamp(0, 1)
 
             #penalization AAT - I
             if train_args["use_regularizer"]:
@@ -33,11 +37,12 @@ def train(train_args):
                                                         att.size(1), att.size(1)).to(device)
                 penal = attention_model.l2_matrix_norm(att@attT - identity)
 
-            #binary classification
             correct += torch.eq(torch.round(y_pred.type(torch.DoubleTensor).squeeze(1)),
                                             y.type(torch.DoubleTensor)).data.sum()
-            all_pred=np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()), axis = 0)
-            all_target = np.concatenate((all_target, y.data.cpu().numpy()), axis = 0)
+            all_pred = np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()),
+                                        axis=0)
+            all_target = np.concatenate((all_target, y.data.cpu().numpy()),
+                                        axis=0)
 
             if train_args["use_regularizer"]:
                 loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
@@ -53,7 +58,7 @@ def train(train_args):
        
             # Gradient clipping
             if train_args["clip"]:
-                torch.nn.utils.clip_grad_norm(attention_model.parameters(), 0.5)
+                torch.nn.utils.clip_grad_norm_(attention_model.parameters(), 0.5)
 
             optimizer.step()
         
@@ -81,6 +86,7 @@ def train(train_args):
 def validate(validate_args, epoch):
     """Validate the model."""
     device = validate_args["device"]
+
     validate_loader = validate_args["validate_loader"]
     criterion = validate_args["criterion"]
     attention_model = validate_args["model"]
@@ -97,13 +103,14 @@ def validate(validate_args, epoch):
             attention_model.hidden_state = attention_model.init_hidden()
             contactmap = contactmap.to(device)
             y_pred, att = attention_model(input, contactmap)
+            y_pred = y_pred.clamp(0, 1)
 
-            #binary classification
             #pred = torch.round(y_pred.type(torch.DoubleTensor).squeeze(1))
             correct += torch.eq(torch.round(y_pred.type(torch.DoubleTensor).squeeze(1)),
                                             y.type(torch.DoubleTensor)).data.sum()
             all_pred=np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()), axis = 0)
             all_target = np.concatenate((all_target, y.data.cpu().numpy()), axis = 0)
+
             if train_args["use_regularizer"]:
                 loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
                                 y.type(torch.DoubleTensor)) + \

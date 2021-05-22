@@ -2,3 +2,4 @@ torch==1.8.0
 scikit-learn
 numpy
 pandas
+progressbar2

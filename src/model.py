@@ -119,7 +119,7 @@ class DrugVQA(nn.Module):
         trans_input = input.transpose(axis, len(input_size)-1)
         trans_size = trans_input.size()
         input_2d = trans_input.contiguous().view(-1, trans_size[-1])
-        soft_max_2d = F.softmax(input_2d)
+        soft_max_2d = F.softmax(input_2d, 1)
         soft_max_nd = soft_max_2d.view(*trans_size)
         return soft_max_nd.transpose(axis, len(input_size)-1)
 
@@ -144,7 +144,7 @@ class DrugVQA(nn.Module):
     def forward(self, x1, x2):
         smile_embed = self.embeddings(x1)         
         outputs, self.hidden_state = self.lstm(smile_embed, self.hidden_state)    
-        sentence_att = F.tanh(self.linear_first(outputs))       
+        sentence_att = torch.tanh(self.linear_first(outputs))       
         sentence_att = self.linear_second(sentence_att)       
         sentence_att = self.softmax(sentence_att, 1)       
         sentence_att = sentence_att.transpose(1, 2)        
@@ -158,7 +158,7 @@ class DrugVQA(nn.Module):
         pic = self.layer2(pic)
         pic_emb = torch.mean(pic, 2)
         pic_emb = pic_emb.permute(0, 2, 1)
-        seq_att = F.tanh(self.linear_first_seq(pic_emb))       
+        seq_att = torch.tanh(self.linear_first_seq(pic_emb))       
         seq_att = self.linear_second_seq(seq_att)       
         seq_att = self.softmax(seq_att, 1)       
         seq_att = seq_att.transpose(1, 2)
@@ -167,10 +167,9 @@ class DrugVQA(nn.Module):
         
         sscomplex = torch.cat([avg_sentence_embed, avg_seq_embed], dim=1) 
         sscomplex = F.relu(self.linear_final_step(sscomplex))
-        print(sscomplex.shape)
         
         if not bool(self.type):
-            output = F.sigmoid(self.linear_final(sscomplex))
+            output = torch.sigmoid(self.linear_final(sscomplex))
             return output, seq_att
         else:
             return F.log_softmax(self.linear_final(sscomplex)), seq_att

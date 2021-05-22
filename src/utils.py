@@ -216,7 +216,7 @@ def load_latest_model(fname_prefix, epochs, model, device):
         if not os.path.isfile(f"../model_pkl/DUDE/{fname_prefix}{i}.pkl"):
             break
     if i > 1:
-        model.load_state_dict(torch.load(f"../model_pkl/DUDE/{fname_prefix}{i - 1}.pkl"))
+        model.load_state_dict(torch.load(f"../model_pkl/DUDE/{fname_prefix}{i - 1}.pkl", map_location=device))
     print(f"Training until epoch {i - 1} completed.")
     return model.to(device), i - 1
     
