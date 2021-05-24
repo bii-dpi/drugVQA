@@ -14,7 +14,7 @@ np.random.seed(SEED)
 
 # Helper functions
 def write_shuffled_data(example_dict, fname):
-    """Write shuffled list of active and decoy examples. """
+    """Write shuffled list of active and decoy examples."""
     examples = example_dict["actives"] + example_dict["decoys"]
     np.random.shuffle(examples)
     with open(fname, "w") as f:
@@ -33,18 +33,14 @@ def get_examples(target, interactivity_type, contact_dict):
     return curr_examples
 
 
-def get_cv_val_fold_proteins(fold_index):
-    with open(f"orig_val_{fold_index}", "r") as f:
-        return [protein_name.split("_")[0] for protein_name
-                in f.read().split()]
-
-
 def get_train_fold_proteins(fold_index):
-    return new_train_fold_proteins[fold_index - 1]
+    with open(f"rv_train_proteins_{fold_index}", "r") as f:
+        return f.read().split()
 
 
 def get_val_fold_proteins(fold_index):
-    return new_val_fold_proteins[fold_index - 1]
+    with open(f"rv_val_proteins_{fold_index}", "r") as f:
+        return f.read().split()
 
 
 def write_train_fold(fold_index, train_fold_proteins, contact_dict):
@@ -95,7 +91,7 @@ def write_val_fold(fold_index, val_fold_proteins, contact_dict):
 
 
 def create_rv_val_folds(fold_index):
-    print(f"Creating CV fold {fold_index}...")
+    print(f"Creating RV fold {fold_index}...")
     # Load all 102 target names.
     all_targets = \
         pd.read_csv(f"dud-e_proteins.csv")["name"]
@@ -117,36 +113,6 @@ def create_rv_val_folds(fold_index):
 
 
 # Application
-orig_val_fold_proteins = {i: get_cv_val_fold_proteins(i) for i in range(1, 4)}
-
-new_val_fold_proteins = {}
-new_train_fold_proteins = {}
-
-
-for i in range(1, 4):
-    np.random.shuffle(orig_val_fold_proteins[i])
-
-
-for i in range(1, 4):
-    new_val_fold_proteins[i] = []
-    new_train_fold_proteins[i] = []
-    for j in range(1, 4):
-        curr_proteins = orig_val_fold_proteins[j]
-        selected_val_proteins = \
-                orig_val_fold_proteins[j][(i - 1) * int(len(orig_val_fold_proteins[j]) / 3):
-                                            i * int(len(orig_val_fold_proteins[j]) / 3)]
-        new_val_fold_proteins[i] += selected_val_proteins
-        new_train_fold_proteins[i] += \
-                [protein for protein in curr_proteins
-                        if protein not in selected_val_proteins]
-
-
-print(new_val_fold_proteins)
-# Do the checks here within and between folds
-
-"""
 create_rv_val_folds(1)
 create_rv_val_folds(2)
 create_rv_val_folds(3)
-"""
-

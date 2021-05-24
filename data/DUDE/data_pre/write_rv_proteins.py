@@ -27,8 +27,21 @@ def write_new_fold(fold):
     with open(f"rv_train_proteins_{fold}", "w") as f:
         f.write(" ".join(training_proteins))
 
-   return validation_proteins
+    return validation_proteins
 
+
+def get_ragoza_fold_id(protein):
+    for fold in range(1, 4):
+        if protein in ragoza_fold_proteins[fold]:
+            return fold
+    raise Exception(f"{protein} does not belong to any fold.")
+
+
+def get_cv_fold_props(protein_list):
+    ragoza_fold_ids = np.array([get_ragoza_fold_id(protein)
+                                for protein in protein_list])
+    return [np.mean(ragoza_fold_ids == fold)
+            for fold in range(1, 4)]
 
 
 ragoza_fold_proteins = {fold: get_ragoza_fold_proteins(fold)
@@ -36,6 +49,14 @@ ragoza_fold_proteins = {fold: get_ragoza_fold_proteins(fold)
 all_proteins = [protein for protein_list in ragoza_fold_proteins.values()
                 for protein in protein_list]
 
+random_fold_proteins = {}
 for fold in range(1, 4):
-    write_new_fold(fold)
+    random_fold_proteins[fold] = write_new_fold(fold)
+
+assert len(set([protein for fold in range(1, 4)
+                for protein in random_fold_proteins[fold]])) == 102
+
+print([get_cv_fold_props(random_fold_proteins[fold]) for fold in range(1, 4)])
+print([33/102, 36/102, 33/102])
+
 
