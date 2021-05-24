@@ -11,7 +11,7 @@ SEED = [87459307486392109,
 torch.manual_seed(SEED[SEED_INDEX])
 
 PREFIX = f"orig_{SEED[SEED_INDEX]}"
-FOLD = "cv_1"
+FOLD = "cv_2"
 CUDA_NUM = 1
 device = torch.device(f"cuda:{CUDA_NUM}")
 print(f"Fold {FOLD} on CUDA {CUDA_NUM} with seed {SEED[SEED_INDEX]}.")
