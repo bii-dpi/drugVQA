@@ -2,18 +2,17 @@ from model import *
 from utils import *
 import torch.utils.data as data_utils
 
-SEED_INDEX = 2
+SEED_INDEX = 0
 
-#indices = torch.arange(100)
 SEED = [87459307486392109,
         48674128193724691,
         71947128564786214]
 torch.manual_seed(SEED[SEED_INDEX])
 
-FOLD_TYPE = "rv"
+FOLD_TYPE = "cv"
 PREFIX = f"orig_{FOLD_TYPE}_{SEED[SEED_INDEX]}"
-FOLD = f"{FOLD_TYPE}_2"
-CUDA_NUM = 2
+FOLD = f"{FOLD_TYPE}_1"
+CUDA_NUM = 0
 device = torch.device(f"cuda:{CUDA_NUM}")
 print(f"Fold {FOLD} on CUDA {CUDA_NUM} with seed {SEED[SEED_INDEX]}.")
 
@@ -61,9 +60,9 @@ validate_fold_path = f"../data/DUDE/data_pre/{FOLD}_val_fold"
 # validate_dataset: [[smile, seq, label],....]    seq_contact_dict:{seq:contactMap,....}
 validate_dataset = getTrainDataSet(validate_fold_path)
 validate_dataset = ProDataset(dataSet=validate_dataset, seqContactDict=seq_contact_dict)
-#validate_dataset = data_utils.Subset(validate_dataset, indices)
+validate_dataset = data_utils.Subset(validate_dataset, torch.arange(5000))
 validate_loader = DataLoader(dataset=validate_dataset, batch_size=model_args["batch_size"],
-                                drop_last=True, shuffle=True)
+                                drop_last=True)
 
 
 # Training arguments
