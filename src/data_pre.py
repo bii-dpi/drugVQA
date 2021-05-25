@@ -2,7 +2,7 @@ from model import *
 from utils import *
 import torch.utils.data as data_utils
 
-SEED_INDEX = 1
+SEED_INDEX = 0
 
 #indices = torch.arange(100)
 SEED = [87459307486392109,
