@@ -2,7 +2,7 @@ from model import *
 from utils import *
 import torch.utils.data as data_utils
 
-SEED_INDEX = 2
+SEED_INDEX = 1
 
 #indices = torch.arange(100)
 SEED = [87459307486392109,
@@ -10,7 +10,7 @@ SEED = [87459307486392109,
         71947128564786214]
 torch.manual_seed(SEED[SEED_INDEX])
 
-FOLD_TYPE = "cv"
+FOLD_TYPE = "rv"
 PREFIX = f"orig_{FOLD_TYPE}_{SEED[SEED_INDEX]}"
 FOLD = f"{FOLD_TYPE}_2"
 CUDA_NUM = 1
@@ -76,10 +76,10 @@ train_args["epochs"] = 50
 train_args["fname_prefix"] = f"{PREFIX}_{FOLD}_"
 train_args["device"] = device
 train_args["model"] = DrugVQA(model_args, block=ResidualBlock)
-train_args["model"], train_args["trained_to"] = load_latest_model(train_args["fname_prefix"],
-                                        train_args["epochs"],
-                                        train_args["model"],
-                                        device)
+train_args["model"], train_args["train_from"] = load_latest_model(train_args["fname_prefix"],
+                                                                    train_args["epochs"],
+                                                                    train_args["model"],
+                                                                    device)
 
 train_args["lr"] = 0.0007
 train_args["use_regularizer"] = False

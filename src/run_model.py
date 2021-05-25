@@ -1,5 +1,5 @@
-from utils import  * 
-from data_pre import  * 
+from utils import  *
+from data_pre import  *
 from sklearn import metrics
 from progressbar import progressbar
 
@@ -13,8 +13,7 @@ def train(train_args):
     attention_model = train_args["model"]
     attention_model.train()
 
-    #xxx
-    for i in progressbar(range(train_args["trained_to"], train_args["epochs"])):
+    for i in progressbar(range(train_args["train_from"], train_args["epochs"])):
         torch.manual_seed(train_args["seed"])
 
         total_loss = 0
@@ -22,7 +21,7 @@ def train(train_args):
         all_pred = np.array([])
         all_target = np.array([])
 
-        for lines, contactmap, properties in train_loader:  
+        for lines, contactmap, properties in train_loader:
             input, seq_lengths, y = make_variables(lines, properties, smiles_letters, device)
             attention_model.hidden_state = attention_model.init_hidden()
             contactmap = contactmap.to(device)
@@ -54,14 +53,14 @@ def train(train_args):
 
             total_loss += loss.data
             optimizer.zero_grad()
-            loss.backward() 
-       
+            loss.backward()
+
             # Gradient clipping
             if train_args["clip"]:
                 torch.nn.utils.clip_grad_norm_(attention_model.parameters(), 0.5)
 
             optimizer.step()
-        
+
         # Across all batches
         accuracy = correct.numpy() / (len(train_loader.dataset))
         recall = metrics.recall_score(all_target, np.round(all_pred))
@@ -81,8 +80,8 @@ def train(train_args):
         with open(f"../results/{train_args['fname_prefix']}train_results.csv", "a") as f:
             f.write((f"{i + 1}, {accuracy}, {recall}, {precision}, {AUC}, {AUPR}, {avg_loss}, "
                         f"{roce_1}, {roce_2}, {roce_3}, {roce_4}\n"))
-    
-   
+
+
 def validate(validate_args, epoch):
     """Validate the model."""
     device = validate_args["device"]
@@ -108,7 +107,7 @@ def validate(validate_args, epoch):
             #pred = torch.round(y_pred.type(torch.DoubleTensor).squeeze(1))
             correct += torch.eq(torch.round(y_pred.type(torch.DoubleTensor).squeeze(1)),
                                             y.type(torch.DoubleTensor)).data.sum()
-            all_pred=np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()), axis = 0)
+            all_pred = np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()), axis = 0)
             all_target = np.concatenate((all_target, y.data.cpu().numpy()), axis = 0)
 
             if train_args["use_regularizer"]:
@@ -119,7 +118,7 @@ def validate(validate_args, epoch):
                 loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
                                     y.type(torch.DoubleTensor))
 
-            total_loss +=loss.data
+            total_loss += loss.data
 
     accuracy = correct.numpy() / (len(validate_loader.dataset))
     recall = metrics.recall_score(all_target, np.round(all_pred))
