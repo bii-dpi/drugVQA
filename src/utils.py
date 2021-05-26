@@ -212,7 +212,7 @@ class ProDataset(Dataset):
 
 
 def load_latest_model(fname_prefix, epochs, model, device):
-    for i in range(1, epochs + 1):
+    for i in range(1, epochs + 2):
         if not os.path.isfile(f"../model_pkl/DUDE/{fname_prefix}{i}.pkl"):
             break
     if i > 1:
