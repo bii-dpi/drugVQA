@@ -1,3 +1,0 @@
-1. Add resume functionality
-2. Make training csvs appendable
-3. 
