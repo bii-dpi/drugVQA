@@ -2,16 +2,16 @@ from model import *
 from utils import *
 import torch.utils.data as data_utils
 
-SEED_INDEX = 2
+SEED_INDEX = 0
 
 SEED = [87459307486392109,
         48674128193724691,
         71947128564786214]
 torch.manual_seed(SEED[SEED_INDEX])
 
-FOLD_TYPE = "cv"
+FOLD_TYPE = "rv"
 PREFIX = f"orig_{FOLD_TYPE}_{SEED[SEED_INDEX]}"
-FOLD = f"{FOLD_TYPE}_3"
+FOLD = f"{FOLD_TYPE}_1"
 CUDA_NUM = 0
 device = torch.device(f"cuda:{CUDA_NUM}")
 print(f"Fold {FOLD} on CUDA {CUDA_NUM} with seed {SEED[SEED_INDEX]}.")
