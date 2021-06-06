@@ -1,8 +1,14 @@
 import numpy as np
 
 
-np.random.seed(123456789)
+SEED_INDEX = 1
 
+SEED = [123456789,
+        619234965,
+        862954379,
+        296493420]
+
+np.random.seed(SEED[SEED_INDEX])
 
 def get_ragoza_fold_proteins(fold):
     with open(f"orig_val_{fold}", "r") as f:
