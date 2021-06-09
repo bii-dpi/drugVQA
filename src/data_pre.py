@@ -3,7 +3,7 @@ from utils import *
 import torch.utils.data as data_utils
 
 
-RV_SEED_INDEX = 1
+RV_SEED_INDEX = 2
 RV_SEED = [123456789,
            619234965,
            862954379,
@@ -20,7 +20,7 @@ torch.manual_seed(SEED[SEED_INDEX])
 FOLD_TYPE = "rv"
 PREFIX = f"{RV_SEED[RV_SEED_INDEX]}_orig_{FOLD_TYPE}_{SEED[SEED_INDEX]}"
 FOLD = f"{FOLD_TYPE}_1"
-CUDA_NUM = 0
+CUDA_NUM = 1
 device = torch.device(f"cuda:{CUDA_NUM}")
 print(f"Fold {FOLD} on CUDA {CUDA_NUM} with seed {SEED[SEED_INDEX]}.")
 
