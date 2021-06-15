@@ -14,3 +14,7 @@ data/DUDE/data_pre/single_*
 results/.Rapp.history
 results/.Rhistory
 src/.ipynb_checkpoints/create_viz-checkpoint.ipynb
+data/.ipynb_checkpoints/get_bindingdb_ids-checkpoint.ipynb
+data/.ipynb_checkpoints/get_bindingdb_proteins-checkpoint.ipynb
+data/.ipynb_checkpoints/prepare_bindingdb_data-checkpoint.ipynb
+data/.Rhistory
