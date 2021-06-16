@@ -22,3 +22,4 @@ data/bindingdb_test_set
 data/bindingdb_ligands.csv
 data/similarity_matrix.pickle
 src/.ipynb_checkpoints/Compare peak performance-checkpoint.ipynb
+data/BindingDB/bindingdb_examples.csv
