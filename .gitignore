@@ -18,3 +18,6 @@ data/.ipynb_checkpoints/get_bindingdb_ids-checkpoint.ipynb
 data/.ipynb_checkpoints/get_bindingdb_proteins-checkpoint.ipynb
 data/.ipynb_checkpoints/prepare_bindingdb_data-checkpoint.ipynb
 data/.Rhistory
+data/bindingdb_test_set
+data/bindingdb_ligands.csv
+data/similarity_matrix.pickle
