@@ -1,26 +1,37 @@
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("RV_SEED_INDEX", type=int)
+parser.add_argument("SEED_INDEX", type=int)
+parser.add_argument("FOLD_TYPE", type=str)
+parser.add_argument("CUDA_NUM", type=int)
+
+args = parser.parse_args()
+
 from model import *
 from utils import *
 import torch.utils.data as data_utils
 
 
-RV_SEED_INDEX = 2
+RV_SEED_INDEX = args.RV_SEED_INDEX
 RV_SEED = [123456789,
            619234965,
            862954379,
            296493420]
 
 
-SEED_INDEX = 2
+SEED_INDEX = args.SEED_INDEX
 
 SEED = [87459307486392109,
         48674128193724691,
         71947128564786214]
 torch.manual_seed(SEED[SEED_INDEX])
 
-FOLD_TYPE = "rv"
+FOLD_TYPE = args.FOLD_TYPE
 PREFIX = f"{RV_SEED[RV_SEED_INDEX]}_orig_{FOLD_TYPE}_{SEED[SEED_INDEX]}"
-FOLD = f"{FOLD_TYPE}_3"
-CUDA_NUM = 0
+FOLD = f"{FOLD_TYPE}_1"
+CUDA_NUM = args.CUDA_NUM
 device = torch.device(f"cuda:{CUDA_NUM}")
 print(f"Fold {FOLD} on CUDA {CUDA_NUM} with seed {SEED[SEED_INDEX]}.")
 
