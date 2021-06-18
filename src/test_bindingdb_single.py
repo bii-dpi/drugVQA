@@ -2,6 +2,8 @@ import argparse
 
 from model import *
 from utils import *
+from run_model import validate
+from progressbar import progressbar
 import torch.utils.data as data_utils
 
 parser = argparse.ArgumentParser()
@@ -71,57 +73,36 @@ sequence_letters = getLetters(seq_letters_path)
 N_CHARS_SMI = len(smiles_letters)
 N_CHARS_SEQ = len(sequence_letters)
 
-train_fold_path = f"../data/DUDE/data_pre/{FOLD}_train_fold"
-# train_dataset: [[smile, seq, label], ....]    seq_contact_dict:{seq:contactMap,....}
-train_dataset = getTrainDataSet(train_fold_path)
-train_dataset = ProDataset(dataSet=train_dataset, seqContactDict=seq_contact_dict)
-#train_dataset = data_utils.Subset(train_dataset, indices)
-train_loader = DataLoader(dataset=train_dataset, batch_size=model_args["batch_size"],
-                            drop_last=True, shuffle=True)
 
-validate_fold_path = f"../data/DUDE/data_pre/{FOLD}_val_fold"
+validate_fold_path = f"../data/BindingDB/bindingdb_examples_filtered_50"
 # validate_dataset: [[smile, seq, label],....]    seq_contact_dict:{seq:contactMap,....}
 validate_dataset = getTrainDataSet(validate_fold_path)
 validate_dataset = ProDataset(dataSet=validate_dataset, seqContactDict=seq_contact_dict)
-validate_dataset = data_utils.Subset(validate_dataset, torch.arange(5000))
 validate_loader = DataLoader(dataset=validate_dataset, batch_size=model_args["batch_size"],
                                 drop_last=True)
-
-
-# Training arguments
-train_args = {}
-
-train_args["train_loader"] = train_loader
-train_args["seq_contact_dict"] = seq_contact_dict
-train_args["epochs"] = 50
-
-train_args["fname_prefix"] = f"{PREFIX}_{FOLD}_"
-train_args["device"] = device
-train_args["model"] = DrugVQA(model_args, block=ResidualBlock)
-train_args["model"], train_args["train_from"] = load_latest_model(train_args["fname_prefix"],
-                                                                    train_args["epochs"],
-                                                                    train_args["model"],
-                                                                    device)
-
-train_args["lr"] = 0.0007
-train_args["use_regularizer"] = False
-train_args["penal_coeff"] = 0.03
-train_args["clip"] = True
-train_args["criterion"] = torch.nn.BCELoss()
-train_args["optimizer"] = torch.optim.Adam(train_args['model'].parameters(), lr=train_args['lr'])
-train_args["seed"] = SEED[SEED_INDEX]
 
 
 # Validation arguments
 validate_args = {}
 
+validate_args["epochs"] = 50
 validate_args["validate_loader"] = validate_loader
 validate_args["seq_contact_dict"] = seq_contact_dict
 
-validate_args["fname_prefix"] = f"{PREFIX}_{FOLD}_"
+validate_args["model_fname_prefix"] = f"{PREFIX}_{FOLD}_"
+validate_args["fname_prefix"] = f"{PREFIX}_{FOLD}_bindingdb_"
 validate_args["device"] = device
 
 validate_args["use_regularizer"] = False
 validate_args["penal_coeff"] = 0.03
 validate_args["criterion"] = torch.nn.BCELoss()
+
+
+for i in progressbar(range(validate_args['epochs'], 0, -2)):
+    curr_path = f"../model_pkl/DUDE/{validate_args['model_fname_prefix']}{i}.pkl"
+    validate_args['model'] = DrugVQA(model_args, block=ResidualBlock)
+    validate_args['model'].load_state_dict(torch.load(curr_path,
+                                            map_location=device))
+    validate_args['model'] = validate_args['model'].to(device)
+    validate(validate_args, i)
 
