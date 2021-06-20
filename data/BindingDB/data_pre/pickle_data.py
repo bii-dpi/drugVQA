@@ -10,22 +10,7 @@ dir_files = os.listdir()
 
 ### Pickle BindingDB sequences.
 
-# Pickle unique BindingDB subset sequences.
-if "raw_bindingdb_sequences.pkl" not in dir_files:
-    with open("raw_bindingdb_sequences", "r") as f:
-        text = f.read().split("\t")
-
-    text = [element.strip().strip("\n").strip("\t")
-            for element in text
-            if element and
-                element.upper() == element and
-                "_" not in element]
-    raw_bindingdb_sequences = np.unique(text).tolist()
-
-    with open("raw_bindingdb_sequences.pkl", "wb") as f:
-        pickle.dump(raw_bindingdb_sequences, f)
-else:
-    raw_bindingdb_sequences = pd.read_pickle("raw_bindingdb_sequences.pkl")
+raw_bindingdb_sequences = pd.read_pickle("raw_bindingdb_sequences.pkl")
 
 # Map raw sequences to FASTA sequences.
 if "mapped_bindingdb_sequences.pkl" not in dir_files:
@@ -41,7 +26,7 @@ if "mapped_bindingdb_sequences.pkl" not in dir_files:
         try:
             return f"\n{fasta_dict[sequence]}\n{sequence}"
         except:
-            #print(f"{sequence} not mapped.")
+#            print(f"{sequence} not mapped.")
             return None
 
     mapped_bindingdb_sequences = []
