@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 
@@ -60,6 +61,8 @@ def get_matrix_string(pdb_id, sequence, dist_matrix):
 
 
 def save_contact_map(sequence):
+    if f"{pdb_id}_cm" in os.listdir():
+       return None
     pdb_id = get_pdb_id(sequence)
     structure = get_pdb_file(pdb_id)
     coord_list = get_coord_list(structure)
