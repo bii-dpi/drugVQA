@@ -24,3 +24,4 @@ data/similarity_matrix.pickle
 src/.ipynb_checkpoints/Compare peak performance-checkpoint.ipynb
 data/BindingDB/bindingdb_examples.csv
 data/BindingDB/data_pre/bindingdb_examples.tsv
+data/BindingDB/contact_map/*_cm
