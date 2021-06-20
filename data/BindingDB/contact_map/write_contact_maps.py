@@ -42,7 +42,7 @@ def get_distance(coords_1, coords_2):
 
 
 def get_distance_matrix(coord_list):
-    dist_matrix = np.zeroes((len(coord_list), len(coord_list))
+    dist_matrix = np.zeros((len(coord_list), len(coord_list)))
     for i in range(len(coord_list)):
         for j in range(len(coord_list)):
             dist_matrix[i, j] = get_distance(coord_list[i],
