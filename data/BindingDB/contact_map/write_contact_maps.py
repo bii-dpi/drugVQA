@@ -65,7 +65,7 @@ def save_contact_map(sequence):
     coord_list = get_coord_list(structure)
     dist_matrix = get_distance_matrix(coord_list)
     text = get_matrix_string(pdb_id, sequence, dist_matrix)
-    with open(pdb_id, "w") as f:
+    with open(f"{pdb_id}_cm", "w") as f:
         f.write(text)
 
 # Get BindingDB sequences and PDB IDs.
