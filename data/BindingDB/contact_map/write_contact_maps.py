@@ -3,7 +3,7 @@ import pandas as pd
 
 from Bio.PDB import *
 from progressbar import progressbar
-
+from concurrent.futures import ProcessPoolExecutor
 
 p = PDBParser(PERMISSIVE=1)
 
@@ -74,5 +74,10 @@ bindingdb_sequences = [element.split("\n")[2] for element in bindingdb_sequences
 
 sequence_mapping = pd.read_pickle("sequence_to_id_map.pkl")
 
+if __name__ == "__main__":
+    with ProcessPoolExecutor() as executor:
+        results = executor.map(save_contact_map, bindingdb_sequences)
+"""
 for sequence in progressbar(bindingdb_sequences):
     save_contact_map(sequence)
+"""
