@@ -1,0 +1,13 @@
+import pandas as pd
+
+contact_dict = pd.read_pickle("sequence_to_id_map.pkl")
+contact_dict = {sequence: ids.split(",")[0] for
+                sequence, ids in contact_dict.items()}
+
+text = ""
+for sequence in contact_dict.keys():
+    text += f"{sequence}:{contact_dict[sequence]}\n"
+
+with open("BindingDB-contactDict", "w") as f:
+    f.write(text)
+
