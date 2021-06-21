@@ -150,8 +150,7 @@ def getSeqContactDict(contactPath, contactDictPath):# make a seq-contactMap dict
         try:
             feature2D = torch.FloatTensor(feature2D)
         except:
-            print(feature2D)
-            raise Exception("lala")
+            raise Exception(seq)
         seqContactDict[seq] = feature2D
     return seqContactDict
 
