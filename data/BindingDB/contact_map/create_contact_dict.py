@@ -6,7 +6,7 @@ contact_dict = {sequence: ids.split(",")[0] for
 
 text = ""
 for sequence in contact_dict.keys():
-    text += f"{sequence}:{contact_dict[sequence]}\n"
+    text += f"{sequence}:{contact_dict[sequence]}_cm\n"
 
 with open("BindingDB-contactDict", "w") as f:
     f.write(text)
