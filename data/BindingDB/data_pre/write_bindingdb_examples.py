@@ -24,6 +24,12 @@ def is_dude(name):
     return False
 
 
+def cm_exists(name):
+    sequence = get_sequence(name)
+    pdb_id = sequence_to_id_dict[sequence]
+    return f"{pdb_id}_cm" in os.listdir("../contact_map/")
+
+
 def get_sequence(name):
     for key in bindingdb_dict.keys():
         if name in key:
@@ -80,11 +86,16 @@ matrix = np.array([line[2:] for line in matrix
 sim_mean = np.nanmean(matrix, axis=0)
 
 
+sequence_to_id_dict = pd.read_pickle("../contact_map/sequence_to_id_map.pkl")
+
+name_to_sim_dict = dict(zip(names, sim_mean.tolist()))
+
 selected_names = np.array(names)[np.argsort(sim_mean)].tolist()
 selected_names = [name for name in selected_names
-                    if not is_dude(name)][:NUM_SELECTED]
+                    if not is_dude(name) and
+                       cm_exists(name)][:NUM_SELECTED]
 selected_sequences = [get_sequence(name) for name in selected_names]
-print(f"Sim %: {np.sort(sim_mean)[:NUM_SELECTED+5]}")
+print(f"Sim %: {[name_to_sim_dict[name] for name in selected_names]}")
 
 # Filter the examples, and prepare them.
 bindingdb_examples = pd.read_csv("bindingdb_examples.tsv", sep="\t")
