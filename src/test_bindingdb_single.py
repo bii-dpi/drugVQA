@@ -74,7 +74,7 @@ N_CHARS_SMI = len(smiles_letters)
 N_CHARS_SEQ = len(sequence_letters)
 
 
-validate_fold_path = f"../data/BindingDB/bindingdb_examples_filtered_50"
+validate_fold_path = f"../data/BindingDB/data_pre/bindingdb_examples_filtered_50"
 # validate_dataset: [[smile, seq, label],....]    seq_contact_dict:{seq:contactMap,....}
 validate_dataset = getTrainDataSet(validate_fold_path)
 validate_dataset = ProDataset(dataSet=validate_dataset, seqContactDict=seq_contact_dict)
