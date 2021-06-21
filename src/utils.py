@@ -146,6 +146,7 @@ def getSeqContactDict(contactPath, contactDictPath):# make a seq-contactMap dict
         _, contactMapName = data.strip().split(':')
         seq, contactMap = getProtein(contactPath, contactMapName)
         contactmap_np = [list(map(float, x.strip(' ').split(' '))) for x in contactMap]
+        print(contactmap_np)
         feature2D = np.expand_dims(contactmap_np, axis=0)
         feature2D = torch.FloatTensor(feature2D)
         seqContactDict[seq] = feature2D
