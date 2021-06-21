@@ -63,7 +63,7 @@ model_args["device"] = device
 
 # Data
 contact_path = "../data/BindingDB/contact_map"
-contact_dict_path = "../data/BindingDB/contact_map/DUDE-contactDict"
+contact_dict_path = "../data/BindingDB/contact_map/BindingDB-contactDict"
 seq_contact_dict = getSeqContactDict(contact_path, contact_dict_path)
 
 smile_letters_path  = "../data/DUDE/voc/combinedVoc-wholeFour.voc"
