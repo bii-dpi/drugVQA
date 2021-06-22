@@ -136,9 +136,9 @@ def validate(validate_args, epoch):
     roce_3 = get_ROCE(all_pred, all_target, 2)
     roce_4 = get_ROCE(all_pred, all_target, 5)
 
-    np.save(f"../model_pred/{validate_args['fname_prefix']}_{epoch}_pred",
+    np.save(f"../model_pred/{validate_args['fname_prefix']}{epoch}_pred",
             all_pred)
-    np.save(f"../model_pred/{validate_args['fname_prefix']}_{epoch}_target",
+    np.save(f"../model_pred/{validate_args['fname_prefix']}{epoch}_target",
             all_target)
 
     with open(f"../results/{validate_args['fname_prefix']}validate_results.csv", "a") as f:
