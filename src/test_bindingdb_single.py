@@ -85,6 +85,8 @@ validate_loader = DataLoader(dataset=validate_dataset, batch_size=model_args["ba
 # Validation arguments
 validate_args = {}
 
+validate_args['smiles_letters'] = smiles_letters
+
 validate_args["epochs"] = 50
 validate_args["validate_loader"] = validate_loader
 validate_args["seq_contact_dict"] = seq_contact_dict

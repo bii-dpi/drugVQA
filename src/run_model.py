@@ -1,5 +1,5 @@
 from utils import  *
-from data_pre import  *
+#from data_pre import  *
 from pickle import dump
 from sklearn import metrics
 from progressbar import progressbar
@@ -99,22 +99,25 @@ def validate(validate_args, epoch):
 
     with torch.no_grad():
         for lines, contactmap, properties in validate_loader:
-            input, seq_lengths, y = make_variables(lines, properties, smiles_letters, device)
+            input, seq_lengths, y = make_variables(lines, properties, validate_args['smiles_letters'], device)
             attention_model.hidden_state = attention_model.init_hidden()
             contactmap = contactmap.to(device)
             y_pred, att = attention_model(input, contactmap)
             y_pred = y_pred.clamp(0, 1)
 
             #pred = torch.round(y_pred.type(torch.DoubleTensor).squeeze(1))
+            """
             correct += torch.eq(torch.round(y_pred.type(torch.DoubleTensor).squeeze(1)),
                                             y.type(torch.DoubleTensor)).data.sum()
+            """
+            correct += torch.eq(torch.round(y_pred.squeeze(1)), y).data.sum()
             all_pred = np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()), axis = 0)
             all_target = np.concatenate((all_target, y.data.cpu().numpy()), axis = 0)
 
-            if train_args["use_regularizer"]:
+            if validate_args["use_regularizer"]:
                 loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
                                 y.type(torch.DoubleTensor)) + \
-                                        (C * penal.cpu() / train_loader.batch_size)
+                                        (C * penal.cpu() / validate_loader.batch_size)
             else:
                 loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
                                     y.type(torch.DoubleTensor))

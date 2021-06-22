@@ -139,7 +139,15 @@ def getProtein(path, contactMapName, contactMap = True):
         return seq
 
 
+def getContactMap(contactMap):
+    contactmap_np = [list(map(float, x.strip(' ').split(' '))) for x in contactMap]
+    feature2D = np.expand_dims(contactmap_np, axis=0)
+    feature2D = torch.FloatTensor(feature2D)
+    return feature2D
+
+
 def getSeqContactDict(contactPath, contactDictPath):# make a seq-contactMap dict
+    """
     contactDict = open(contactDictPath).readlines()
     seqContactDict = {}
     for data in contactDict:
@@ -153,7 +161,15 @@ def getSeqContactDict(contactPath, contactDictPath):# make a seq-contactMap dict
             raise Exception(seq)
         seqContactDict[seq] = feature2D
     return seqContactDict
-
+    """
+    with open(contactDictPath, "r") as f:
+        seqContactDict = f.readlines()
+    seqContactDict = [line.strip("\n").split(":") for line in seqContactDict]
+    seqContactDict = dict(zip([line[0] for line in seqContactDict],
+                                [line[1] for line in seqContactDict]))
+    seqContactDict = {sequence: getContactMap(getProtein(contactPath, contactMapName)[1])
+                        for sequence, contactMapName in seqContactDict.items()}
+    return seqContactDict
 
 def getLetters(path):
     with open(path, 'r') as f:
@@ -168,6 +184,7 @@ def getTrainDataSet(trainFoldPath):
     return trainDataSet#[[smiles, sequence, interaction],.....]
 
 
+"""
 def getDataDict(testFoldPath):
     # Load target name-sequence mapping dictionary.
     with open(f"../data/DUDE/dataPre/DUDE-contactDict") as f:
@@ -185,6 +202,7 @@ def getDataDict(testFoldPath):
         if not dataDict[target_name]:
             dataDict.pop(target_name, None)
     return dataDict
+"""
 
 
 class ProDataset(Dataset):
