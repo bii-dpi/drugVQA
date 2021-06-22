@@ -132,10 +132,11 @@ def validate(validate_args, epoch):
     roce_2 = get_ROCE(all_pred, all_target, 1)
     roce_3 = get_ROCE(all_pred, all_target, 2)
     roce_4 = get_ROCE(all_pred, all_target, 5)
-    
-    with open(f"../model_pred/{validate_args['fname_prefix']}_{epoch}_pred.pkl", "wb") as f:
-        print(all_pred.shape, all_target.shape)
-        dump(1, f)
+
+    np.save(f"../model_pred/{validate_args['fname_prefix']}_{epoch}_pred",
+            all_pred)
+    np.save(f"../model_pred/{validate_args['fname_prefix']}_{epoch}_target",
+            all_target)
 
     with open(f"../results/{validate_args['fname_prefix']}validate_results.csv", "a") as f:
         f.write((f"{epoch}, {accuracy}, {recall}, {precision}, {AUC}, {AUPR}, {loss}, "

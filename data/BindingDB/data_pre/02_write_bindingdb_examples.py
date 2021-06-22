@@ -7,7 +7,7 @@ import pandas as pd
 from urllib.request import urlopen
 
 
-NUM_SELECTED = 50
+NUM_SELECTED = 25
 
 
 def get_dict(fname):
@@ -26,8 +26,11 @@ def is_dude(name):
 
 def cm_exists(name):
     sequence = get_sequence(name)
-    pdb_id = sequence_to_id_dict[sequence]
-    return f"{pdb_id}_cm" in os.listdir("../contact_map/")
+    try:
+        pdb_id = sequence_to_id_dict[sequence]
+    except:
+        return False
+    return f"{pdb_id}" in os.listdir("../contact_map/")
 
 
 def get_sequence(name):
@@ -65,12 +68,14 @@ def create_example(i):
 #        print(f"{i} has no valid int.")
         return ""
 
+
 bindingdb_dict = get_dict("mapped_bindingdb_sequences.txt")
 dude_dict = get_dict("mapped_dude_sequences.txt")
 
+
 if "sim_matrix.pkl" not in os.listdir():
     response = urlopen(
-        "https://www.ebi.ac.uk/Tools/services/rest/clustalo/result/clustalo-I20210619-205247-0024-85657637-p2m/pim"
+        "https://www.ebi.ac.uk/Tools/services/rest/clustalo/result/clustalo-I20210621-232858-0515-28318368-p1m/pim"
     )
     sim_matrix = response.read().decode("utf-8")
     with open("sim_matrix.pkl", "wb") as f:
@@ -86,11 +91,16 @@ matrix = np.array([line[2:] for line in matrix
 sim_mean = np.nanmean(matrix, axis=0)
 
 
-sequence_to_id_dict = pd.read_pickle("../contact_map/sequence_to_id_map.pkl")
+with open("../contact_map/BindingDB-contactDict", "r") as f:
+    sequence_to_id_dict = f.readlines()
+
+sequence_to_id_dict = {line.split(":")[0]:line.split(":")[1].strip("\n")
+                        for line in sequence_to_id_dict}
 
 name_to_sim_dict = dict(zip(names, sim_mean.tolist()))
 
 selected_names = np.array(names)[np.argsort(sim_mean)].tolist()
+
 selected_names = [name for name in selected_names
                     if not is_dude(name) and
                        cm_exists(name)][:NUM_SELECTED]
@@ -117,6 +127,4 @@ print(f"Actives to decoys: {np.mean([int(line.split()[2]) for line in filtered_e
 # Write the prepared file.
 with open(f"bindingdb_examples_filtered_{NUM_SELECTED}", "w") as f:
     f.write("\n".join(filtered_examples))
-
-
 

@@ -6,10 +6,10 @@ import pandas as pd
 
 from urllib.request import urlopen
 
+
 dir_files = os.listdir()
 
 ### Pickle BindingDB sequences.
-
 raw_bindingdb_sequences = pd.read_pickle("raw_bindingdb_sequences.pkl")
 
 # Map raw sequences to FASTA sequences.
@@ -34,6 +34,7 @@ if "mapped_bindingdb_sequences.pkl" not in dir_files:
         line = get_fasta_pair(sequence)
         if line is not None:
             mapped_bindingdb_sequences.append(line)
+
 
     with open("mapped_bindingdb_sequences.pkl", "wb") as f:
         pickle.dump(mapped_bindingdb_sequences, f)
@@ -62,9 +63,14 @@ else:
     mapped_dude_sequences = pd.read_pickle("mapped_dude_sequences.pkl")
 
 # Remove BindingDB sequences that are drugVQA sequences.
+def is_dude(sequence):
+    for pair in mapped_dude_sequences:
+        if sequence in pair:
+            return True
+    return False
+
 mapped_bindingdb_sequences = [line for line in mapped_bindingdb_sequences
-                                if line.split("\n")[1] not in
-                                mapped_dude_sequences]
+                                if not is_dude(line.split("\n")[1])]
 
 # Write complete FASTA file.
 with open("mapped_dude_sequences.txt", "w") as f:

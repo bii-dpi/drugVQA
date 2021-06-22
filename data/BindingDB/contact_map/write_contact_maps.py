@@ -6,6 +6,7 @@ from Bio.PDB import *
 from progressbar import progressbar
 from concurrent.futures import ProcessPoolExecutor
 
+
 p = PDBParser(PERMISSIVE=1)
 
 
@@ -61,9 +62,9 @@ def get_matrix_string(pdb_id, sequence, dist_matrix):
 
 
 def save_contact_map(sequence):
+    pdb_id = get_pdb_id(sequence)
     if f"{pdb_id}_cm" in os.listdir():
        return None
-    pdb_id = get_pdb_id(sequence)
     structure = get_pdb_file(pdb_id)
     coord_list = get_coord_list(structure)
     dist_matrix = get_distance_matrix(coord_list)
@@ -77,10 +78,10 @@ bindingdb_sequences = [element.split("\n")[2] for element in bindingdb_sequences
 
 sequence_mapping = pd.read_pickle("sequence_to_id_map.pkl")
 
+"""
 if __name__ == "__main__":
     with ProcessPoolExecutor() as executor:
         results = executor.map(save_contact_map, bindingdb_sequences)
 """
 for sequence in progressbar(bindingdb_sequences):
     save_contact_map(sequence)
-"""
