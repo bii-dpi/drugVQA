@@ -7,7 +7,7 @@ import pandas as pd
 from urllib.request import urlopen
 
 
-NUM_SELECTED = 25
+NUM_SELECTED = -1
 
 
 def get_dict(fname):
@@ -105,7 +105,9 @@ selected_names = [name for name in selected_names
                     if not is_dude(name) and
                        cm_exists(name)][:NUM_SELECTED]
 selected_sequences = [get_sequence(name) for name in selected_names]
-print(f"Sim %: {[name_to_sim_dict[name] for name in selected_names]}")
+selected_sequences = [sequence for sequence in selected_sequences
+                        if len(sequence) < 300]
+print(f"Sim %: {[round(name_to_sim_dict[name], 2) for name in selected_names]}")
 
 # Filter the examples, and prepare them.
 bindingdb_examples = pd.read_csv("bindingdb_examples.tsv", sep="\t")

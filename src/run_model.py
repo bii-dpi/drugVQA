@@ -124,7 +124,7 @@ def validate(validate_args, epoch):
 
             total_loss += loss.data
 
-    accuracy = correct.numpy() / (len(validate_loader.dataset))
+    accuracy = correct.cpu().numpy() / (len(validate_loader.dataset))
     recall = metrics.recall_score(all_target, np.round(all_pred))
     precision = metrics.precision_score(all_target, np.round(all_pred))
     AUC = metrics.roc_auc_score(all_target, all_pred)
