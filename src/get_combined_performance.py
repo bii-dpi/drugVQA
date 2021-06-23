@@ -16,11 +16,13 @@ def get_AUPR(seed, fold_num, epoch):
 
 
 def get_pred(seed, fold_num, epoch):
-    return np.load(f"123456789_orig_rv_{seed}_rv_{fold_num}_bindingdb_{epoch}_pred.npy")
+    return np.load(f"../model_pred/"
+                   f"123456789_orig_rv_{seed}_rv_{fold_num}_bindingdb_{epoch}_pred.npy")
 
 
 def get_target(seed, fold_num, epoch):
-    return np.load(f"123456789_orig_rv_{seed}_rv_{fold_num}_bindingdb_{epoch}_target.npy")
+    return np.load(f"../model_pred/"
+                   f"123456789_orig_rv_{seed}_rv_{fold_num}_bindingdb_{epoch}_target.npy")
 
 
 def combine_pred(epoch, method):
@@ -32,8 +34,8 @@ def combine_pred(epoch, method):
                     total_pred = get_pred(seed, fold_num, epoch)
                 else:
                     total_pred += get_pred(seed, fold_num, epoch)
-        return total_pred / (len(SEEDS) / len(range(1, 4)))
-    elif method == "scaled":
+        return total_pred / (len(SEEDS) * len(range(1, 4)))
+    elif method == "weighted":
         weights_dict = {}
         for seed in SEEDS:
             for fold_num in range(1, 4):
@@ -55,10 +57,12 @@ def combine_pred(epoch, method):
 
 
 def evaluate(epoch, method):
-    all_target = get_target(seed, 1, epoch)
-    all_pred = combine_pred(seed, epoch, method)
+    all_target = get_target(SEEDS[0], 1, epoch)
+    all_pred = combine_pred(epoch, method)
+    print(np.mean(all_pred))
+    print(np.unique(all_target))
 
-    loss = metrics.log_loss(all_target, all_red)
+    loss = metrics.log_loss(all_target, all_pred)
     accuracy = np.mean(all_target == all_pred)
     recall = metrics.recall_score(all_target, np.round(all_pred))
     precision = metrics.precision_score(all_target, np.round(all_pred))
@@ -75,6 +79,8 @@ def evaluate(epoch, method):
                     f"{roce_1}, {roce_2}, {roce_3}, {roce_4}\n"))
 
 
-for epoch in range(2, 51, 2):
-    print(evaluate(seed, epoch))
+#for epoch in range(2, 51, 2):
+for epoch in range(50, 1, -2):
+    evaluate(epoch, "mean")
+    evaluate(epoch, "weighted")
 
