@@ -107,7 +107,9 @@ selected_names = [name for name in selected_names
 selected_sequences = [get_sequence(name) for name in selected_names]
 selected_sequences = [sequence for sequence in selected_sequences
                         if len(sequence) < 300]
+print(len(selected_sequences))
 print(f"Sim %: {[round(name_to_sim_dict[name], 2) for name in selected_names]}")
+print(np.mean([name_to_sim_dict[name] for name in selected_names]))
 
 # Filter the examples, and prepare them.
 bindingdb_examples = pd.read_csv("bindingdb_examples.tsv", sep="\t")

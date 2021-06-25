@@ -25,3 +25,4 @@ src/.ipynb_checkpoints/Compare peak performance-checkpoint.ipynb
 data/BindingDB/bindingdb_examples.csv
 data/BindingDB/data_pre/bindingdb_examples.tsv
 data/BindingDB/contact_map/*_cm
+src/.ipynb_checkpoints/create_bindingdb_viz-checkpoint.ipynb
