@@ -92,6 +92,7 @@ validate_loader = DataLoader(dataset=validate_dataset, batch_size=model_args["ba
 train_args = {}
 
 train_args["train_loader"] = train_loader
+train_args["smiles_letters"] = smiles_letters
 train_args["seq_contact_dict"] = seq_contact_dict
 train_args["epochs"] = 50
 

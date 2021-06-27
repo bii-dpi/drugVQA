@@ -13,7 +13,7 @@ parser.add_argument("CUDA_NUM", type=int)
 
 args = parser.parse_args()
 
-run((f"screen python {args.mode}.py "
+run((f"python {args.mode}.py "
             f"{args.RV_SEED_INDEX} "
             f"{args.SEED_INDEX} "
             f"{args.FOLD_TYPE} "

@@ -1,12 +1,13 @@
 import numpy as np
 
 
-SEED_INDEX = 0
+SEED_INDEX = 3
 
 SEED = [123456789,
         619234965,
         862954379,
-        296493420]
+        296493420,
+        579340210]
 
 np.random.seed(SEED[SEED_INDEX])
 
