@@ -1,2 +1,0 @@
-do 3 0 rv 1 x and 3 0 rv 2 y
-and 3 2 rv * *
