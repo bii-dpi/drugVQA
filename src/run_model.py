@@ -1,5 +1,4 @@
 from utils import  *
-#from data_pre import  *
 from pickle import dump
 from sklearn import metrics
 from progressbar import progressbar
@@ -23,7 +22,9 @@ def train(train_args):
         all_target = np.array([])
 
         for lines, contactmap, properties in train_loader:
-            input, seq_lengths, y = make_variables(lines, properties, smiles_letters, device)
+            input, seq_lengths, y = make_variables(lines, properties,
+                                                   train_args["smiles_letters"],
+                                                   device)
             attention_model.hidden_state = attention_model.init_hidden()
             contactmap = contactmap.to(device)
             y_pred, att = attention_model(input, contactmap)
