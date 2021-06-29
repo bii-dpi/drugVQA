@@ -7,6 +7,10 @@ import pandas as pd
 from urllib.request import urlopen
 
 
+INACTIVE_THRESHOLD = 25
+SHARING_DISSIM_THRESHOLD = 20
+
+
 def get_dict(fname):
     with open(fname, "r") as f:
         lines = f.readlines()[1:]
@@ -65,6 +69,7 @@ class Protein:
         self.set_examples()
 
 
+    # Used in initialization.
     @staticmethod
     def get_sequence(name):
         for key in bindingdb_dict.keys():
@@ -91,45 +96,35 @@ class Protein:
             pdb_id = sequence_to_id_dict[sequence]
         except:
             return False
-        return f"{pdb_id}" in os.listdir("../contact_map/")
+        print(pdb_id)
+        return pdb_id in os.listdir("../contact_map/")
 
 
     @staticmethod
     def get_interactivity(nm):
-        if not nm:
-            return None
         try:
             nm = float(nm)
-            if nm * 1000 <= 1:
-                return "1"
-            elif nm * 1000 >= 50:
-                return "0"
-            return None
         except:
+            if nm is None:
+                return nm
             if nm.startswith(">") or nm.startswith("<"):
-                return get_interaction(nm[1:])
+                return Protein.get_interactivity(nm[1:])
             else:
                 raise Exception(f"Unknown nM: {nm}")
 
-
-    def in_sim_matrix(self):
-        return self.in_sim_matrix
-
-
-    def get_len(self):
-        return len(self.sequence)
-
-
-    def get_dissim_names(self, threshold=20):
-        return [name for name in self.sims.keys()
-                if cm_exists(name) and
-                self.sims[name] <= threshold]
+        if nm <= 1 * 1000:
+            return "1"
+        elif nm >= INACTIVE_THRESHOLD * 1000:
+            return "0"
+        return None
 
 
     def set_examples(self):
         def process_row(examples, i):
             line = (f"{examples.ligand_smiles.iloc[i]} "
                     f"{examples.target_sequence.iloc[i]}")
+
+            nm = None
             if not pd.isna(examples.ki.iloc[i]):
                 nm = examples.ki.iloc[i]
             elif not pd.isna(examples.ic50.iloc[i]):
@@ -138,9 +133,12 @@ class Protein:
                 nm = examples.kd.iloc[i]
             elif not pd.isna(examples.ec50.iloc[i]):
                 nm = examples.ec50.iloc[i]
-            try:
-                return f"{line} {Protein.get_interactivity(nm)}"
-            except:
+
+            interactivity = Protein.get_interactivity(nm)
+
+            if interactivity is not None:
+                return f"{line} {interactivity}"
+            else:
                 return ""
 
         self.examples = bindingdb_examples[
@@ -154,18 +152,41 @@ class Protein:
                          if example]
 
 
+
+
+
+
+    def add_inactives(self, protein_list):
+        def modify_actives(other_actives):
+            return [f"{active.split()[0]} {self.sequence} 0"
+                    for active in other_actives]
+
+        for protein in proteins_list:
+            if [name for name in self.get_dissim_names()
+                if name in protein.get_name()]:
+                self.examples += modify_actives(protein.get_actives())
+
+
     def get_examples(self):
         return self.examples
 
 
     def get_actives(self):
-        return [" ".join(example) for example in self.examples
-                if int(example[1])]
+        return [example for example in self.examples
+                if int(example.split()[2])]
 
 
     def get_inactives(self):
-        return [" ".join(example) for example in self.examples
-                if not int(example[1])]
+        return [example for example in self.examples
+                if not int(example.split()[2])]
+
+
+    def get_ratio(self):
+        try:
+            return round(len(self.get_actives()) /
+                         len(self.get_inactives()), 2)
+        except:
+            return len(self.get_actives())
 
 
     def get_sim(self, other_name):
@@ -182,6 +203,21 @@ class Protein:
                            self.name != other_name])
 
 
+
+
     def __repr__(self):
         return f"{self.name[:4]} {Protein.is_bindingdb(self.name)}"
+    def in_sim_matrix(self):
+        return self.in_sim_matrix
+
+
+    def get_len(self):
+        return len(self.sequence)
+
+
+    def get_dissim_names(self):
+        return [name for name in self.sims.keys()
+                if cm_exists(name) and
+                self.sims[name] <= SHARING_DISSIM_THRESHOLD]
+
 
