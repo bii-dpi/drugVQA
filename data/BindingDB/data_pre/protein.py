@@ -9,6 +9,7 @@ from urllib.request import urlopen
 
 INACTIVE_THRESHOLD = 25
 SHARING_DISSIM_THRESHOLD = 20
+SHUFFLE_SEED = 12345
 
 
 def get_dict(fname):
@@ -73,10 +74,10 @@ class Protein:
     @staticmethod
     def get_sequence(name):
         for key in bindingdb_dict.keys():
-            if name in key:
+            if name in key or name in key:
                 return bindingdb_dict[key]
         for key in dude_dict.keys():
-            if name in key:
+            if name in key or name in key:
                 return dude_dict[key]
         raise Exception(f"{name} not in BindingDB or DUD-E dict.")
 
@@ -84,7 +85,7 @@ class Protein:
     @staticmethod
     def is_bindingdb(name):
         for key in bindingdb_dict.keys():
-            if key in name:
+            if key in name or name in key:
                 return True
         return False
 
@@ -96,7 +97,6 @@ class Protein:
             pdb_id = sequence_to_id_dict[sequence]
         except:
             return False
-        print(pdb_id)
         return pdb_id in os.listdir("../contact_map/")
 
 
@@ -119,6 +119,7 @@ class Protein:
         return None
 
 
+    # Used in setting and adding examples.
     def set_examples(self):
         def process_row(examples, i):
             line = (f"{examples.ligand_smiles.iloc[i]} "
@@ -152,11 +153,19 @@ class Protein:
                          if example]
 
 
+    def get_sim(self, other_name):
+        for key in self.sims.keys():
+            if key in other_name:
+                return self.sims[key]
+        raise Exception(f"{other_name} not found in self.sims")
 
 
+    def get_dissim_names(self):
+        return [other_name for other_name in self.sims.keys()
+                if self.sims[other_name] <= SHARING_DISSIM_THRESHOLD]
 
 
-    def add_inactives(self, protein_list):
+    def add_inactives(self, proteins_list):
         def modify_actives(other_actives):
             return [f"{active.split()[0]} {self.sequence} 0"
                     for active in other_actives]
@@ -165,6 +174,28 @@ class Protein:
             if [name for name in self.get_dissim_names()
                 if name in protein.get_name()]:
                 self.examples += modify_actives(protein.get_actives())
+
+
+    # For resampling.
+    def resample_inactives(self):
+        if self.get_ratio() < 50:
+            return None
+
+        inactives = self.get_inactives()
+        np.random.seed(SHUFFLE_SEED)
+        np.random.shuffle(inactives)
+
+        actives = self.get_actives()
+
+        self.examples = actives + inactives[:(len(actives) * 50)]
+
+
+    # Miscellaneous getters.
+    def get_dude_sim_mean(self):
+        return np.nanmean([self.get_sim(other_name) for other_name
+                           in self.sims.keys()
+                           if not Protein.is_bindingdb(other_name) and
+                           self.name != other_name])
 
 
     def get_examples(self):
@@ -182,42 +213,17 @@ class Protein:
 
 
     def get_ratio(self):
-        try:
-            return round(len(self.get_actives()) /
-                         len(self.get_inactives()), 2)
-        except:
-            return len(self.get_actives())
+        return len(self.get_inactives()) / len(self.get_actives())
 
 
-    def get_sim(self, other_name):
-        for key in self.sims.keys():
-            if key in other_name:
-                return self.sims[key]
-        raise Exception(f"{other_name} not found in self.sims")
-
-
-    def get_dude_sim_mean(self):
-        return np.nanmean([self.get_sim(other_name) for other_name
-                           in self.sims.keys()
-                           if not Protein.is_bindingdb(other_name) and
-                           self.name != other_name])
-
-
-
-
-    def __repr__(self):
-        return f"{self.name[:4]} {Protein.is_bindingdb(self.name)}"
-    def in_sim_matrix(self):
-        return self.in_sim_matrix
+    def get_name(self):
+        return self.name
 
 
     def get_len(self):
         return len(self.sequence)
 
 
-    def get_dissim_names(self):
-        return [name for name in self.sims.keys()
-                if cm_exists(name) and
-                self.sims[name] <= SHARING_DISSIM_THRESHOLD]
-
+    def __repr__(self):
+        return f"{self.name[:4]} {Protein.is_bindingdb(self.name)}"
 
