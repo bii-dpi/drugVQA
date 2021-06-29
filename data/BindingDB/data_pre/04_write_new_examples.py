@@ -3,7 +3,7 @@ from protein import *
 
 
 NUM_PROTEINS = -1
-NUM_EXAMPLES = 2000
+NUM_EXAMPLES = 5000
 SHUFFLE_SEED
 
 # Load proteins
