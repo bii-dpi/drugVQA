@@ -7,10 +7,28 @@ import pandas as pd
 from urllib.request import urlopen
 
 
+def get_dict(fname):
+    with open(fname, "r") as f:
+        lines = f.readlines()[1:]
+    return dict(zip([lines[i].strip("\n") for i in range(0, len(lines), 2)],
+                    [lines[i].strip("\n") for i in range(1, len(lines), 2)]))
+
+
 # Data
+bindingdb_examples = pd.read_csv("bindingdb_examples.tsv", sep="\t")
+
+## Name-to-sequence.
 bindingdb_dict = get_dict("mapped_bindingdb_sequences.txt")
 dude_dict = get_dict("mapped_dude_sequences.txt")
 
+## Sequence-to-cm ID.
+with open("../contact_map/BindingDB-contactDict", "r") as f:
+    sequence_to_id_dict = f.readlines()
+
+sequence_to_id_dict = {line.split(":")[0]:line.split(":")[1].strip("\n")
+                        for line in sequence_to_id_dict}
+
+## Name-to-similarities.
 if "sim_matrix.pkl" not in os.listdir():
     response = urlopen(
         "https://www.ebi.ac.uk/Tools/services/rest/clustalo/result/clustalo-I20210621-232858-0515-28318368-p1m/pim"
@@ -23,22 +41,32 @@ else:
 
 sim_matrix = [line.split() for line in sim_matrix.split("\n")[6:-1]]
 names = [line[1] for line in sim_matrix]
-
-with open("../contact_map/BindingDB-contactDict", "r") as f:
-    sequence_to_id_dict = f.readlines()
-
-sequence_to_id_dict = {line.split(":")[0]:line.split(":")[1].strip("\n")
-                        for line in sequence_to_id_dict}
-
-name_to_sim_dict = dict(zip(names, sim_mean.tolist()))
+sim_matrix = [line[2:] for line in sim_matrix]
+sim_dict = {names[i] : np.array(sim_matrix[i], dtype=float).tolist()
+            for i in range(len(names))}
+sim_dict = {name : dict(zip(names, similarities))
+            for name, similarities in sim_dict.items()}
 
 
 # Protein class definition
 class Protein:
     def __init__(self, name):
+        # Descriptors
         self.name = name
         self.sequence = Protein.get_sequence(name)
+        # Group membership
         self.is_bindingdb = Protein.is_bindingdb(name)
+        ## If is DUD-E, _cm will not exist.
+        self.cm_exists = Protein.cm_exists(name)
+        # Other data
+        for key in sim_dict.keys():
+            if name in key:
+                self.sims = sim_dict[key]
+        try:
+            print(self.sims)
+        except:
+            print(name)
+        self.set_examples()
 
 
     @staticmethod
@@ -55,14 +83,14 @@ class Protein:
     @staticmethod
     def is_bindingdb(name):
         for key in bindingdb_dict.keys():
-            if name in key:
+            if key in name:
                 return True
         return False
 
 
     @staticmethod
     def cm_exists(name):
-        sequence = get_sequence(name)
+        sequence = Protein.get_sequence(name)
         try:
             pdb_id = sequence_to_id_dict[sequence]
         except:
@@ -70,79 +98,94 @@ class Protein:
         return f"{pdb_id}" in os.listdir("../contact_map/")
 
 
+    @staticmethod
+    def get_interactivity(nm):
+        if not nm:
+            return None
+        try:
+            nm = float(nm)
+            if nm * 1000 <= 1:
+                return "1"
+            elif nm * 1000 >= 50:
+                return "0"
+            return None
+        except:
+            if nm.startswith(">") or nm.startswith("<"):
+                return get_interaction(nm[1:])
+            else:
+                raise Exception(f"Unknown nM: {nm}")
 
 
-def get_dict(fname):
-    with open(fname, "r") as f:
-        lines = f.readlines()[1:]
-    return dict(zip([lines[i].strip("\n") for i in range(0, len(lines), 2)],
-                    [lines[i].strip("\n") for i in range(1, len(lines), 2)]))
+    def in_sim_matrix(self):
+        return self.in_sim_matrix
 
 
+    def get_len(self):
+        return len(self.sequence)
 
 
+    def get_dissim_names(self, threshold=20):
+        return [name for name in self.sims.keys()
+                if cm_exists(name) and
+                self.sims[name] <= threshold]
 
 
-def get_interaction(nm):
-    try:
-        nm = float(nm)
-        return "1" if nm <= 10 else "0"
-    except:
-        if nm.startswith(">") or nm.startswith("<"):
-            return get_interaction(nm[1:])
-        else:
-            raise Exception(f"Unknown nM: {nm}")
+    def set_examples(self):
+        def process_row(examples, i):
+            line = (f"{examples.ligand_smiles.iloc[i]} "
+                    f"{examples.target_sequence.iloc[i]}")
+            if not pd.isna(examples.ki.iloc[i]):
+                nm = examples.ki.iloc[i]
+            elif not pd.isna(examples.ic50.iloc[i]):
+                nm = examples.ic50.iloc[i]
+            elif not pd.isna(examples.kd.iloc[i]):
+                nm = examples.kd.iloc[i]
+            elif not pd.isna(examples.ec50.iloc[i]):
+                nm = examples.ec50.iloc[i]
+            try:
+                return f"{line} {Protein.get_interactivity(nm)}"
+            except:
+                return ""
+
+        self.examples = bindingdb_examples[
+                                bindingdb_examples.\
+                                target_sequence ==
+                                self.sequence
+                              ]
+        self.examples = [process_row(self.examples, i)
+                         for i in range(len(self.examples))]
+        self.examples = [example for example in self.examples
+                         if example]
 
 
-def create_example(i):
-    line = (f"{bindingdb_examples.ligand_smiles.iloc[i]} "
-            f"{bindingdb_examples.target_sequence.iloc[i]}")
-    if not pd.isna(bindingdb_examples.ki.iloc[i]):
-        nm = bindingdb_examples.ki.iloc[i]
-    elif not pd.isna(bindingdb_examples.ic50.iloc[i]):
-        nm = bindingdb_examples.ic50.iloc[i]
-    elif not pd.isna(bindingdb_examples.kd.iloc[i]):
-        nm = bindingdb_examples.kd.iloc[i]
-    elif not pd.isna(bindingdb_examples.ec50.iloc[i]):
-        nm = bindingdb_examples.ec50.iloc[i]
-    try:
-        return f"{line} {get_interaction(nm)}"
-    except:
-#        print(f"{i} has no valid int.")
-        return ""
+    def get_examples(self):
+        return self.examples
 
 
+    def get_actives(self):
+        return [" ".join(example) for example in self.examples
+                if int(example[1])]
 
-selected_names = np.array(names)[np.argsort(sim_mean)].tolist()
 
-selected_names = [name for name in selected_names
-                    if not is_dude(name) and
-                       cm_exists(name)][:NUM_SELECTED]
-selected_sequences = [get_sequence(name) for name in selected_names]
-selected_sequences = [sequence for sequence in selected_sequences
-                        if len(sequence) < 300]
-print(len(selected_sequences))
-print(f"Sim %: {[round(name_to_sim_dict[name], 2) for name in selected_names]}")
-print(np.mean([name_to_sim_dict[name] for name in selected_names]))
+    def get_inactives(self):
+        return [" ".join(example) for example in self.examples
+                if not int(example[1])]
 
-# Filter the examples, and prepare them.
-bindingdb_examples = pd.read_csv("bindingdb_examples.tsv", sep="\t")
-bindingdb_examples = bindingdb_examples[
-                                        bindingdb_examples.\
-                                        target_sequence.\
-                                        isin(selected_sequences)
-                                       ]
 
-filtered_examples = []
-for i in range(len(bindingdb_examples)):
-    filtered_examples.append(create_example(i))
+    def get_sim(self, name):
+        for key in self.sims.keys():
+            if name in key:
+                return self.sims[key]
+        raise Exception(f"{name} not found in self.sims")
 
-filtered_examples = [example for example in filtered_examples if example]
 
-print(f"Num examples: {len(filtered_examples)}")
-print(f"Actives to decoys: {np.mean([int(line.split()[2]) for line in filtered_examples])}")
+    def get_dude_sim_mean(self):
+        return np.nanmean([self.get_sim(other_name) for other_name
+                           in self.sims.keys()
+                           if not Protein.is_bindingdb(other_name) and
+                           self.name != other_name])
 
-# Write the prepared file.
-with open(f"bindingdb_examples_filtered_{NUM_SELECTED}", "w") as f:
-    f.write("\n".join(filtered_examples))
+
+    def __repr__(self):
+        return f"{self.name[:4]} {Protein.is_bindingdb(self.name)}"
 
