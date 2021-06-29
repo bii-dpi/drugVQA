@@ -60,12 +60,8 @@ class Protein:
         self.cm_exists = Protein.cm_exists(name)
         # Other data
         for key in sim_dict.keys():
-            if name in key:
+            if key in name:
                 self.sims = sim_dict[key]
-        try:
-            print(self.sims)
-        except:
-            print(name)
         self.set_examples()
 
 
@@ -172,11 +168,11 @@ class Protein:
                 if not int(example[1])]
 
 
-    def get_sim(self, name):
+    def get_sim(self, other_name):
         for key in self.sims.keys():
-            if name in key:
+            if key in other_name:
                 return self.sims[key]
-        raise Exception(f"{name} not found in self.sims")
+        raise Exception(f"{other_name} not found in self.sims")
 
 
     def get_dude_sim_mean(self):
