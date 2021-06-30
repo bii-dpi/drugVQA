@@ -1,14 +1,5 @@
-import os
-import pickle
-
-import numpy as np
-import pandas as pd
-
-from urllib.request import urlopen
-
-
 NUM_SELECTED = -1
-ILLEGAL_LIST = ["[c-]"]
+ILLEGAL_LIST = ["[c-]", "[N@@]"]
 
 
 def has_illegal(line):
@@ -19,12 +10,12 @@ def has_illegal(line):
     return False
 
 
-with open(f"bindingdb_examples_filtered_{NUM_SELECTED}", "r") as f:
+with open(f"new_bindingdb_examples_{NUM_SELECTED}", "r") as f:
     text = f.readlines()
 
 print(len(text))
 text = [line for line in text if not has_illegal(line)]
 print(len(text))
 
-with open(f"bindingdb_examples_filtered_{NUM_SELECTED}", "w") as f:
+with open(f"new_bindingdb_examples_{NUM_SELECTED}", "w") as f:
     f.writelines(text)
