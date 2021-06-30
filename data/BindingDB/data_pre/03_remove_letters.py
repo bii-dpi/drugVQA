@@ -1,5 +1,5 @@
 NUM_SELECTED = -1
-ILLEGAL_LIST = ["[c-]", "[N@@]"]
+ILLEGAL_LIST = ["[c-]", "[N@@]", "[Re-]"]
 
 
 def has_illegal(line):
