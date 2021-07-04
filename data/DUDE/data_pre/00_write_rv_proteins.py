@@ -1,7 +1,7 @@
 import numpy as np
 
 
-SEED_INDEX = 3
+SEED_INDEX = 0
 
 SEED = [123456789,
         619234965,

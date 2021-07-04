@@ -16,6 +16,13 @@ def get_AUPR(seed, fold_num, epoch):
     return [float(line[5]) for line in results if int(line[0]) == epoch][0]
 
 
+def get_bindingdb_AUPR(seed, fold_num, epoch):
+    with open(f"../results/123456789_orig_rv_{seed}_rv_{fold_num}_bindingdb_validate_results.csv") as f:
+        results = f.readlines()
+    results = [line.split(",") for line in results]
+    return [float(line[5]) for line in results if int(line[0]) == epoch][0]
+
+
 def get_pred(seed, fold_num, epoch):
     return np.load(f"../model_pred/"
                    f"123456789_orig_rv_{seed}_rv_{fold_num}_bindingdb_{epoch}_pred.npy")
@@ -143,3 +150,11 @@ for epoch in range(2, 51, 2):
 corr_matrix /= len(range(2, 51, 2))
 
 corr_matrix.to_csv("corr_matrix.csv")
+
+
+all_AUPR = []
+for seed_num in range(0, 3):
+    for fold_num in range(1, 4):
+        for epoch in range(2, 51, 2):
+            all_AUPR.append(get_bindingdb_AUPR(SEEDS[seed_num], fold_num, epoch))
+print(np.mean(all_AUPR), np.std(all_AUPR))
