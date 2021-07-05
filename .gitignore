@@ -27,3 +27,6 @@ data/BindingDB/data_pre/bindingdb_examples.tsv
 data/BindingDB/contact_map/*_cm
 src/.ipynb_checkpoints/create_bindingdb_viz-checkpoint.ipynb
 token
+shallow_training_examples
+shallow_validation_examples
+shallow_testing_examples
