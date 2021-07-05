@@ -30,4 +30,5 @@ token
 shallow_training_examples
 shallow_validation_examples
 shallow_testing_examples
+smiles_dict.pkl
 *.mol
