@@ -16,7 +16,7 @@ def get_smiles_strings(path):
 def write_sdf_file(smiles_string, i):
     mol = Chem.MolFromSmiles(smiles_string)
     with Chem.rdmolfiles.SDWriter(f"{i}.mol") as w:
-        w.write(mol)
+        w.write(Chem.MoltoMolBlock(mol))
 
 
 if "smiles_dict.pkl" in os.listdir():
@@ -48,4 +48,10 @@ for smiles_string in progressbar(strings_to_do):
 
 with open("smiles_dict.pkl", "wb") as f:
     pickle.dump(smiles_dict, f)
+
+"""
+    #Writes the MolBlock to a .mol file
+    with open(f"../mols/{name}.mol", "w") as newfile:
+        newfile.write(imported)
+"""
 
