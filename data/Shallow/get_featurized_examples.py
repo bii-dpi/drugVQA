@@ -4,10 +4,13 @@ import deepchem as dc
 
 
 # Protein path dictionaries.
-with open("../BindingDB/data_pre/mapped_bindingdb_sequences.pkl", "rb") as f:
+with open("../BindingDB/contact_map/sequence_to_id_map.pkl", "rb") as f:
     sequence_to_id_bindingdb = pickle.load(f)
+sequence_to_id_bindingdb = {sequence: pdb_ids.split(",")[0].lower()
+                            for sequence, pdb_ids in sequence_to_id_bindingdb.items()}
+print(len(sequence_to_id_bindingdb))
 
-with open("../BindingDB/data_pre/mapped_dude_sequences.pkl", "rb") as f:
+with open("../BindingDB/contact_map/sequence_to_id_map.pkl", "rb") as f:
     sequence_to_id_dude = pickle.load(f)
 
 
@@ -25,13 +28,15 @@ def get_ligand_path(smiles_string):
 
 def get_protein_path(sequence):
     try:
-        pdb_id = sequence_to_id_bindingdb[sequence]
-        print(pdb_id)
-        return "../BindingDB/contact_map/pdb_files/pdb{pdb_id}.ent"
+        try:
+            pdb_id = sequence_to_id_bindingdb[sequence]
+            return "../BindingDB/contact_map/pdb_files/pdb{pdb_id}.ent"
+        except:
+            pdb_id = sequence_to_id_dude[sequence]
+            return "../DUDE/contact_map/pdb_files/pdb{pdb_id}.ent"
     except:
-        pdb_id = sequence_to_id_dude[sequence]
-        print(pdb_id)
-        return "../DUDE/contact_map/pdb_files/pdb{pdb_id}.ent"
+        return None
+
 
 
 def get_paths(path):
@@ -56,7 +61,5 @@ example_paths = ["../DUDE/data_pre/shallow_training_examples",
 
 featurizer = dc.feat.RdkitGridFeaturizer(feature_types=["flat_combined"])
 
-print(get_paths(example_paths[0]))
-
-print([featurizer.featurize(get_paths(path)) for path in example_paths[:10]])
+print([featurizer.featurize(get_paths(path)) for path in example_paths[2:3]])
 
