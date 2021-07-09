@@ -65,6 +65,7 @@ class Protein:
         self.cm_exists = Protein.cm_exists(name)
         # Other data
         for key in sim_dict.keys():
+#            perhaps you should change this to f"... " in
             if key in name:
                 self.sims = sim_dict[key]
         self.set_examples()
@@ -74,6 +75,7 @@ class Protein:
     @staticmethod
     def get_sequence(name):
         for key in bindingdb_dict.keys():
+#            perhaps you should change this to f"... " in
             if name in key or name in key:
                 return bindingdb_dict[key]
         for key in dude_dict.keys():
@@ -85,6 +87,7 @@ class Protein:
     @staticmethod
     def is_bindingdb(name):
         for key in bindingdb_dict.keys():
+#            perhaps you should change this to f"... " in
             if key in name or name in key:
                 return True
         return False
@@ -154,6 +157,7 @@ class Protein:
 
 
     def get_sim(self, other_name):
+#        perhaps you should change this to f"... " in
         for key in self.sims.keys():
             if key in other_name:
                 return self.sims[key]
@@ -198,6 +202,12 @@ class Protein:
                            self.name != other_name])
 
 
+    def get_sims(self, proteins_list):
+        return [self.get_sim(protein.get_name())
+                for protein in proteins_list
+                if protein != self]
+
+
     def get_examples(self):
         return self.examples
 
@@ -222,6 +232,12 @@ class Protein:
 
     def get_len(self):
         return len(self.sequence)
+
+
+    def __eq__(self, other):
+        if isinstance(other, Protein):
+            return self.name == other.get_name()
+        return False
 
 
     def __repr__(self):

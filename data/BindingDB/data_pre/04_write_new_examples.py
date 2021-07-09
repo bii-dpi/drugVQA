@@ -10,7 +10,7 @@ SHUFFLE_SEED
 bindingdb_proteins = [Protein(name) for name in list(bindingdb_dict.keys())
                       if Protein.cm_exists(name)]
 bindingdb_proteins = [protein for protein in bindingdb_proteins
-                      if len(protein.get_examples()) >= 50]
+                      if len(protein.get_examples()) >= 40]
 
 # Select BindingDB proteins to keep.
 dude_sim_means = [protein.get_dude_sim_mean() for protein in bindingdb_proteins]
