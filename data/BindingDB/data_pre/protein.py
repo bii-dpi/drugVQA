@@ -57,7 +57,7 @@ sim_dict = {name : dict(zip(names, similarities))
 class Protein:
     def __init__(self, name):
         # Descriptors
-        self.name = name
+        self.name = name  # These are always full names.
         self.sequence = Protein.get_sequence(name)
         # Group membership
         self.is_bindingdb = Protein.is_bindingdb(name)
@@ -65,8 +65,7 @@ class Protein:
         self.cm_exists = Protein.cm_exists(name)
         # Other data
         for key in sim_dict.keys():
-#            perhaps you should change this to f"... " in
-            if key in name:
+            if f"{key} " in name:
                 self.sims = sim_dict[key]
         self.set_examples()
 
@@ -74,12 +73,15 @@ class Protein:
     # Used in initialization.
     @staticmethod
     def get_sequence(name):
+        # DUD-E and BindingDB dicts have full names too, so this robustnes
+        # is unnecessary.
+        # However, in the case the name given is not a full name, then we
+        # must prepare for that.
         for key in bindingdb_dict.keys():
-#            perhaps you should change this to f"... " in
-            if name in key or name in key:
+            if name in key or f"{name} " in key:
                 return bindingdb_dict[key]
         for key in dude_dict.keys():
-            if name in key or name in key:
+            if name in key or f"{name} " in key:
                 return dude_dict[key]
         raise Exception(f"{name} not in BindingDB or DUD-E dict.")
 
@@ -87,8 +89,7 @@ class Protein:
     @staticmethod
     def is_bindingdb(name):
         for key in bindingdb_dict.keys():
-#            perhaps you should change this to f"... " in
-            if key in name or name in key:
+            if key in name or f"{name} " in key:
                 return True
         return False
 
@@ -157,14 +158,14 @@ class Protein:
 
 
     def get_sim(self, other_name):
-#        perhaps you should change this to f"... " in
         for key in self.sims.keys():
-            if key in other_name:
+            if other_name == key or f"{key} " in other_name:
                 return self.sims[key]
         raise Exception(f"{other_name} not found in self.sims")
 
 
     def get_dissim_names(self):
+        # The partial names.
         return [other_name for other_name in self.sims.keys()
                 if self.sims[other_name] <= SHARING_DISSIM_THRESHOLD]
 
@@ -176,7 +177,7 @@ class Protein:
 
         for protein in proteins_list:
             if [name for name in self.get_dissim_names()
-                if name in protein.get_name()]:
+                if f"{name} " in protein.get_name()]:
                 self.examples += modify_actives(protein.get_actives())
 
 
@@ -199,7 +200,7 @@ class Protein:
         return np.nanmean([self.get_sim(other_name) for other_name
                            in self.sims.keys()
                            if not Protein.is_bindingdb(other_name) and
-                           self.name != other_name])
+                           f"{other_name} " not in self.name])
 
 
     def get_sims(self, proteins_list):
@@ -228,6 +229,11 @@ class Protein:
 
     def get_name(self):
         return self.name
+
+
+    def get_id(self):
+        sequence = Protein.get_sequence(self.name)
+        return sequence_to_id_dict[sequence]
 
 
     def get_len(self):
