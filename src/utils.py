@@ -146,7 +146,7 @@ def getContactMap(contactMap):
     return feature2D
 
 
-def getSeqContactDict(contactPath, contactDictPath):# make a seq-contactMap dict
+def getSeqContactDict(contactPath, contactDictPath, validate_fold_path=None):# make a seq-contactMap dict
     """
     contactDict = open(contactDictPath).readlines()
     seqContactDict = {}
@@ -162,11 +162,21 @@ def getSeqContactDict(contactPath, contactDictPath):# make a seq-contactMap dict
         seqContactDict[seq] = feature2D
     return seqContactDict
     """
+    if validate_fold_path is not None:
+        with open(validate_fold_path, "r") as f:
+            involved_sequences = np.unique([line.split()[1]
+                                            for line in f.readlines()])
+        print(involved_sequences)
+
     with open(contactDictPath, "r") as f:
         seqContactDict = f.readlines()
     seqContactDict = [line.strip("\n").split(":") for line in seqContactDict]
     seqContactDict = dict(zip([line[0] for line in seqContactDict],
                                 [line[1] for line in seqContactDict]))
+    if validate_fold_path is not None:
+        seqContactDict = {sequence: contactMapName
+                          for sequence, contactMapName in seqContactDict.items()
+                          if sequence in involved_sequences}
     seqContactDict = {sequence: getContactMap(getProtein(contactPath, contactMapName)[1])
                         for sequence, contactMapName in seqContactDict.items()}
     return seqContactDict
