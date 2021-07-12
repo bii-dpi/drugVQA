@@ -166,7 +166,6 @@ def getSeqContactDict(contactPath, contactDictPath, validate_fold_path=None):# m
         with open(validate_fold_path, "r") as f:
             involved_sequences = np.unique([line.split()[1]
                                             for line in f.readlines()])
-        print(involved_sequences)
 
     with open(contactDictPath, "r") as f:
         seqContactDict = f.readlines()
