@@ -181,6 +181,7 @@ def getSeqContactDict(contactPath, contactDictPath, validate_fold_path=None):# m
                         for sequence, contactMapName in seqContactDict.items()}
     return seqContactDict
 
+
 def getLetters(path):
     with open(path, 'r') as f:
         chars = f.read().split()
