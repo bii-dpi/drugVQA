@@ -1,7 +1,7 @@
 import os
 
 cuda_num = 0
-for seed_index in range(0, 3):
+for seed_index in range(2, 3):
     for fold_num in range(1, 4):
         print(seed_index, fold_num)
         # RV_SEED_INDEX, SEED_INDEX, FOLD_TYPE, FOLD_NUM, CUDA_NUM
