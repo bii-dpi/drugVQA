@@ -6,6 +6,7 @@ from run_model import validate
 from progressbar import progressbar
 import torch.utils.data as data_utils
 
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument("RV_SEED_INDEX", type=int)
