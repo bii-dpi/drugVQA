@@ -72,6 +72,7 @@ def save_contact_map(sequence):
     with open(f"{pdb_id}_cm", "w") as f:
         f.write(text)
 
+
 # Get BindingDB sequences and PDB IDs.
 bindingdb_sequences = pd.read_pickle("../data_pre/mapped_bindingdb_sequences.pkl")
 bindingdb_sequences = [element.split("\n")[2] for element in bindingdb_sequences]
