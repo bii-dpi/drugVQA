@@ -51,16 +51,10 @@ else:
 with open("fastas_dude", "w") as f:
     f.writelines(list(dude_fasta_dict.values()))
 
-with open("../DUDE/data_pre/fastas_dude", "w") as f:
-    f.writelines(list(dude_fasta_dict.values()))
-
 with open("fastas_bindingdb", "w") as f:
-    f.writelines(np.unique(list(bindingdb_fasta_dict.values())))
-
-with open("../BindingDB/data_pre/fastas_bindingdb", "w") as f:
-    f.writelines(np.unique(list(bindingdb_fasta_dict.values())))
+    f.writelines(list(bindingdb_fasta_dict.values()))
 
 with open("../BindingDB/contact_map/all_fastas", "w") as f:
     f.writelines(list(dude_fasta_dict.values()) +
-                 np.unique(list(bindingdb_fasta_dict.values())).tolist())
+                 list(bindingdb_fasta_dict.values()))
 
