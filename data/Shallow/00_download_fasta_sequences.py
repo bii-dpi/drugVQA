@@ -27,7 +27,7 @@ if "dude_fasta_dict.pkl" not in os.listdir():
     dude_fasta_dict = {}
     for pdb_id in progressbar(dude_pdb_ids):
         dude_fasta_dict[pdb_id] = get_fasta(pdb_id)
-        sleep(1)
+#        sleep(1)
 
     with open("dude_fasta_dict.pkl", "wb") as f:
         pickle.dump(dude_fasta_dict, f)
@@ -55,12 +55,12 @@ with open("../DUDE/data_pre/fastas_dude", "w") as f:
     f.writelines(list(dude_fasta_dict.values()))
 
 with open("fastas_bindingdb", "w") as f:
-    f.writelines(list(bindingdb_fasta_dict.values()))
+    f.writelines(np.unique(list(bindingdb_fasta_dict.values())))
 
 with open("../BindingDB/data_pre/fastas_bindingdb", "w") as f:
-    f.writelines(list(bindingdb_fasta_dict.values()))
+    f.writelines(np.unique(list(bindingdb_fasta_dict.values())))
 
 with open("../BindingDB/contact_map/all_fastas", "w") as f:
     f.writelines(list(dude_fasta_dict.values()) +
-                 list(bindingdb_fasta_dict.values()))
+                 np.unique(list(bindingdb_fasta_dict.values())).tolist())
 
