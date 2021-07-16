@@ -34,4 +34,4 @@ smiles_dict.pkl
 *.mol
 bindingdb_examples.tsv
 data/Shallow/*.npy
-
+*.tsv
