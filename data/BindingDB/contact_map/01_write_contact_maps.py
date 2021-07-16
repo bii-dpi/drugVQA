@@ -10,10 +10,6 @@ from concurrent.futures import ProcessPoolExecutor
 p = PDBParser(PERMISSIVE=1)
 
 
-def get_pdb_id(sequence):
-    return sequence_mapping[sequence].split(",")[0]
-
-
 def get_pdb_file(pdb_id):
     try:
         return p.get_structure(pdb_id,
@@ -62,7 +58,7 @@ def get_matrix_string(pdb_id, sequence, dist_matrix):
 
 
 def save_contact_map(sequence):
-    pdb_id = get_pdb_id(sequence)
+    pdb_id = sequence_mapping[sequence]
     if f"{pdb_id}_cm" in os.listdir():
        return None
     structure = get_pdb_file(pdb_id)
@@ -74,15 +70,17 @@ def save_contact_map(sequence):
 
 
 # Get BindingDB sequences and PDB IDs.
-bindingdb_sequences = pd.read_pickle("../data_pre/mapped_bindingdb_sequences.pkl")
-bindingdb_sequences = [element.split("\n")[2] for element in bindingdb_sequences]
-
 sequence_mapping = pd.read_pickle("sequence_to_id_map.pkl")
+bindingdb_sequences = sequence_mapping.keys()
+bindingdb_sequences = [sequence for sequence in bindingdb_sequences
+                        if sequence_mapping[sequence] + "_cm" not in
+                        os.listdir()]
+print(len(bindingdb_sequences))
 
-"""
 if __name__ == "__main__":
     with ProcessPoolExecutor() as executor:
         results = executor.map(save_contact_map, bindingdb_sequences)
 """
 for sequence in progressbar(bindingdb_sequences):
     save_contact_map(sequence)
+"""

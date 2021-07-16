@@ -1,0 +1,2 @@
+Unlike in DUDE, BindingDB sequences often map different sequences to the same
+PDB ID, and so FASTA titles, too, need to be treated with more caution.

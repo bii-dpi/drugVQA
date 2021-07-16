@@ -16,7 +16,6 @@ bindingdb_examples = \
                         ]
                       ].drop_duplicates().dropna()
 
-
 raw_bindingdb_sequences = [sequence.upper().strip().strip("\n").strip("\t")
                            for sequence in bindingdb_examples.target_sequence]
 
@@ -30,17 +29,11 @@ pdbl = PDBList()
 pdbl.download_pdb_files(sequence_to_id_map.values(),
                         file_format="pdb", pdir="pdb_files")
 
+with open("sequence_to_id_map.pkl", "wb") as f:
+    dump(sequence_to_id_map, f)
+
 """
-def has_cm(pdb_ids):
-    return f"{pdb_ids.split(',')[0].upper()}_cm" in os.listdir("../contact_map")
-
-
-sequence_to_id_map = {sequence:pdb_ids for sequence, pdb_ids in sequence_to_id_map.items()
-                        if has_cm(pdb_ids)}
-
 with open("raw_bindingdb_sequences.pkl", "wb") as f:
     dump(list(sequence_to_id_map.keys()), f)
-
-with open("../contact_map/sequence_to_id_map.pkl", "wb") as f:
-    dump(sequence_to_id_map, f)
 """
+
