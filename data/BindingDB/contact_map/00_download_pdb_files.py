@@ -43,7 +43,7 @@ sequence_to_id_map = dict(zip(raw_bindingdb_sequences,
                                for line in bindingdb_examples.target_pdb_id.tolist()]))
 sequence_to_id_map = {sequence: pdb_id for sequence, pdb_id
                       in sequence_to_id_map.items()
-                      if len(sequence) != 7096}
+                      if len(sequence) != 7096 and pdb_id != "3MAX"}
 
 selected_sequences = {pdb_id: [] for pdb_id in sequence_to_id_map.values()}
 for sequence in sequence_to_id_map.keys():
