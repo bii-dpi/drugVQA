@@ -6,23 +6,22 @@ import pandas as pd
 
 
 SHUFFLE_SEED = 12345
+ILLEGAL_LIST = ["[c-]", "[N@@]", "[Re-]"]
 
 
-def get_contactdict(fname):
+def get_dict(path):
     with open(path, "r") as f:
         sequence_to_id_dict = f.readlines()
 
-    return {line.split(":")[0]:line.split(":")[1].strip("\n")
+    return {line.split(":")[1].strip("_cm\n"):line.split(":")[0]
             for line in sequence_to_id_dict}
 
 
 # Data
-bindingdb_examples = pd.read_csv("bindingdb_examples.tsv", sep="\t")
+bindingdb_examples = pd.read_csv("bindingdb_examples.csv")
 
-
-## Sequence-to-cm ID.
-bindingdb_contactdict = get_contactdict("../contact_map/BindingDB-contactDict")
-bindingdb_contactdict = get_contactdict("../../DUDE/contact_map/DUDE-contactDict")
+bindingdb_dict = get_dict("../contact_map/BindingDB_contactdict")
+dude_dict = get_dict("../../DUDE/contact_map/DUDE_contactdict")
 
 ## Name-to-similarities.
 sim_matrix = pd.read_pickle("sim_matrix.pkl")
@@ -37,7 +36,8 @@ class Protein:
         # Group membership
         self.is_bindingdb = Protein.is_bindingdb(pdb_id)
         # Other data
-        self.set_examples()
+        self.sims = sim_matrix[pdb_id]
+        self.set_actives()
 
 
     # Used in initialization.
@@ -51,7 +51,7 @@ class Protein:
 
     @staticmethod
     def is_bindingdb(pdb_id):
-        if pdb_id in bindingdb_dict.key():
+        if pdb_id in bindingdb_dict.keys():
             return True
         return False
 
@@ -80,14 +80,14 @@ class Protein:
                     f"{examples.target_sequence.iloc[i]}")
 
             nm = None
-            if not pd.isna(actives.ki.iloc[i]):
-                nm = actives.ki.iloc[i]
-            elif not pd.isna(actives.ic50.iloc[i]):
-                nm = actives.ic50.iloc[i]
-            elif not pd.isna(actives.kd.iloc[i]):
-                nm = actives.kd.iloc[i]
-            elif not pd.isna(actives.ec50.iloc[i]):
-                nm = actives.ec50.iloc[i]
+            if not pd.isna(examples.ki.iloc[i]):
+                nm = examples.ki.iloc[i]
+            elif not pd.isna(examples.ic50.iloc[i]):
+                nm = examples.ic50.iloc[i]
+            elif not pd.isna(examples.kd.iloc[i]):
+                nm = examples.kd.iloc[i]
+            elif not pd.isna(examples.ec50.iloc[i]):
+                nm = examples.ec50.iloc[i]
 
             interactivity = Protein.get_interactivity(nm)
 
@@ -95,6 +95,15 @@ class Protein:
                 return f"{line} {interactivity}"
             else:
                 return ""
+
+
+        def has_illegal(active):
+            smiles_string = active.split()[0]
+            for illegal_element in ILLEGAL_LIST:
+                if illegal_element in smiles_string:
+                    return True
+            return False
+
 
         self.actives = bindingdb_examples[
                                 bindingdb_examples.\
@@ -104,29 +113,29 @@ class Protein:
         self.actives = [process_row(self.actives, i)
                          for i in range(len(self.actives))]
         self.actives = [active for active in self.actives
-                         if active]
+                         if active and not has_illegal(active)]
+
+
+    # Miscellaneous getters.
+    def get_actives(self):
+        return self.actives
 
 
     def get_sim(self, other_pdb_id):
         return self.sims[other_pdb_id]
 
 
-    # Miscellaneous getters.
     def get_dude_sim_mean(self):
-        return np.nanmean([self.get_sim(other_pdb_id) for other_pdb_id
-                           in self.sims.keys()
-                           if not Protein.is_bindingdb(other_pdb_id) and
-                           other_pdb_id != self.pdb_id])
+        return np.nanmean([self.get_sim(other_pdb_id)
+                           for other_pdb_id in self.sims.keys()
+                           if not Protein.is_bindingdb(other_pdb_id)
+                           and other_pdb_id != self.pdb_id])
 
 
     def get_sims(self, proteins_list):
         return [self.get_sim(protein.get_pdb_id())
                 for protein in proteins_list
                 if protein != self]
-
-
-    def get_actives(self):
-        return self.actives
 
 
     def get_pdb_id(self):
@@ -144,5 +153,5 @@ class Protein:
 
 
     def __repr__(self):
-        return f"{self.pdb_id[:4]} {Protein.is_bindingdb(self.pdb_id)}"
+        return f"{self.pdb_id} {self.is_bindingdb}"
 
