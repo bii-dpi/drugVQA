@@ -41,9 +41,15 @@ raw_bindingdb_sequences = [sequence.upper().strip().strip("\n").strip("\t")
 sequence_to_id_map = dict(zip(raw_bindingdb_sequences,
                               [line.split(",")[0]
                                for line in bindingdb_examples.target_pdb_id.tolist()]))
+
+# Remove all PDBs shared in common.
+with open("../../DUDE/contact_map/DUDE_contactdict", "r") as f:
+    DUDE_pdb_ids = [line.strip("\n").split(":")[1].strip("_cm")
+                    for line in f.readlines()]
+
 sequence_to_id_map = {sequence: pdb_id for sequence, pdb_id
                       in sequence_to_id_map.items()
-                      if len(sequence) != 7096 and pdb_id != "3MAX"}
+                      if len(sequence) != 7096 and pdb_id not in DUDE_pdb_ids}
 
 selected_sequences = {pdb_id: [] for pdb_id in sequence_to_id_map.values()}
 for sequence in sequence_to_id_map.keys():
@@ -55,7 +61,6 @@ for pdb_id in selected_sequences.keys():
 sequence_to_id_map = {sequence: pdb_id
                       for pdb_id, sequence in selected_sequences.items()
                       if sequence is not None}
-
 
 # Download PDBs.
 pdbl = PDBList()
