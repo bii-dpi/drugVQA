@@ -4,90 +4,55 @@ import pickle
 import numpy as np
 import pandas as pd
 
-from urllib.request import urlopen
 
-
-SHARING_DISSIM_THRESHOLD = 20
 SHUFFLE_SEED = 12345
 
 
-def get_dict(fname):
-    with open(fname, "r") as f:
-        lines = f.readlines()[1:]
-    return dict(zip([lines[i].strip("\n") for i in range(0, len(lines), 2)],
-                    [lines[i].strip("\n") for i in range(1, len(lines), 2)]))
+def get_contactdict(fname):
+    with open(path, "r") as f:
+        sequence_to_id_dict = f.readlines()
+
+    return {line.split(":")[0]:line.split(":")[1].strip("\n")
+            for line in sequence_to_id_dict}
 
 
 # Data
 bindingdb_examples = pd.read_csv("bindingdb_examples.tsv", sep="\t")
 
-## Name-to-sequence.
-bindingdb_dict = get_dict("mapped_bindingdb_sequences.txt")
-dude_dict = get_dict("mapped_dude_sequences.txt")
 
 ## Sequence-to-cm ID.
-with open("../contact_map/BindingDB-contactDict", "r") as f:
-    sequence_to_id_dict = f.readlines()
-
-sequence_to_id_dict = {line.split(":")[0]:line.split(":")[1].strip("\n")
-                        for line in sequence_to_id_dict}
+bindingdb_contactdict = get_contactdict("../contact_map/BindingDB-contactDict")
+bindingdb_contactdict = get_contactdict("../../DUDE/contact_map/DUDE-contactDict")
 
 ## Name-to-similarities.
-if "sim_matrix.pkl" not in os.listdir():
-    response = urlopen(
-        "https://www.ebi.ac.uk/Tools/services/rest/clustalo/result/clustalo-I20210621-232858-0515-28318368-p1m/pim"
-    )
-    sim_matrix = response.read().decode("utf-8")
-    with open("sim_matrix.pkl", "wb") as f:
-        pickle.dump(sim_matrix, f)
-else:
-    sim_matrix = pd.read_pickle("sim_matrix.pkl")
-
-sim_matrix = [line.split() for line in sim_matrix.split("\n")[6:-1]]
-names = [line[1] for line in sim_matrix]
-sim_matrix = [line[2:] for line in sim_matrix]
-sim_dict = {names[i] : np.array(sim_matrix[i], dtype=float).tolist()
-            for i in range(len(names))}
-sim_dict = {name : dict(zip(names, similarities))
-            for name, similarities in sim_dict.items()}
+sim_matrix = pd.read_pickle("sim_matrix.pkl")
 
 
 # Protein class definition
 class Protein:
-    def __init__(self, name):
+    def __init__(self, pdb_id):
         # Descriptors
-        self.name = name  # These are always full names.
-        self.sequence = Protein.get_sequence(name)
+        self.pdb_id = pdb_id  # These are always full names.
+        self.sequence = Protein.get_sequence(pdb_id)
         # Group membership
-        self.is_bindingdb = Protein.is_bindingdb(name)
+        self.is_bindingdb = Protein.is_bindingdb(pdb_id)
         # Other data
-        for key in sim_dict.keys():
-            if f"{key} " in name:
-                self.sims = sim_dict[key]
         self.set_examples()
 
 
     # Used in initialization.
     @staticmethod
-    def get_sequence(name):
-        # DUD-E and BindingDB dicts have full names too, so this robustnes
-        # is unnecessary.
-        # However, in the case the name given is not a full name, then we
-        # must prepare for that.
-        for key in bindingdb_dict.keys():
-            if name in key or f"{name} " in key:
-                return bindingdb_dict[key]
-        for key in dude_dict.keys():
-            if name in key or f"{name} " in key:
-                return dude_dict[key]
-        raise Exception(f"{name} not in BindingDB or DUD-E dict.")
+    def get_sequence(pdb_id):
+        try:
+            return bindingdb_dict[pdb_id]
+        except:
+            return dude_dict[pdb_id]
 
 
     @staticmethod
-    def is_bindingdb(name):
-        for key in bindingdb_dict.keys():
-            if key in name or f"{name} " in key:
-                return True
+    def is_bindingdb(pdb_id):
+        if pdb_id in bindingdb_dict.key():
+            return True
         return False
 
 
@@ -105,26 +70,24 @@ class Protein:
 
         if nm <= 1 * 1000:
             return "1"
-        elif nm >= INACTIVE_THRESHOLD * 1000:
-            return "0"
         return None
 
 
     # Used in setting and adding examples.
-    def set_examples(self):
+    def set_actives(self):
         def process_row(examples, i):
             line = (f"{examples.ligand_smiles.iloc[i]} "
                     f"{examples.target_sequence.iloc[i]}")
 
             nm = None
-            if not pd.isna(examples.ki.iloc[i]):
-                nm = examples.ki.iloc[i]
-            elif not pd.isna(examples.ic50.iloc[i]):
-                nm = examples.ic50.iloc[i]
-            elif not pd.isna(examples.kd.iloc[i]):
-                nm = examples.kd.iloc[i]
-            elif not pd.isna(examples.ec50.iloc[i]):
-                nm = examples.ec50.iloc[i]
+            if not pd.isna(actives.ki.iloc[i]):
+                nm = actives.ki.iloc[i]
+            elif not pd.isna(actives.ic50.iloc[i]):
+                nm = actives.ic50.iloc[i]
+            elif not pd.isna(actives.kd.iloc[i]):
+                nm = actives.kd.iloc[i]
+            elif not pd.isna(actives.ec50.iloc[i]):
+                nm = actives.ec50.iloc[i]
 
             interactivity = Protein.get_interactivity(nm)
 
@@ -133,55 +96,41 @@ class Protein:
             else:
                 return ""
 
-        self.examples = bindingdb_examples[
+        self.actives = bindingdb_examples[
                                 bindingdb_examples.\
                                 target_sequence ==
                                 self.sequence
                               ]
-        self.examples = [process_row(self.examples, i)
-                         for i in range(len(self.examples))]
-        self.examples = [example for example in self.examples
-                         if example]
+        self.actives = [process_row(self.actives, i)
+                         for i in range(len(self.actives))]
+        self.actives = [active for active in self.actives
+                         if active]
 
 
-    def get_sim(self, other_name):
-        for key in self.sims.keys():
-            if other_name == key or f"{key} " in other_name:
-                return self.sims[key]
-        raise Exception(f"{other_name} not found in self.sims")
-
-
-    def get_dissim_names(self):
-        # The partial names.
-        return [other_name for other_name in self.sims.keys()
-                if self.sims[other_name] <= SHARING_DISSIM_THRESHOLD]
+    def get_sim(self, other_pdb_id):
+        return self.sims[other_pdb_id]
 
 
     # Miscellaneous getters.
     def get_dude_sim_mean(self):
-        return np.nanmean([self.get_sim(other_name) for other_name
+        return np.nanmean([self.get_sim(other_pdb_id) for other_pdb_id
                            in self.sims.keys()
-                           if not Protein.is_bindingdb(other_name) and
-                           f"{other_name} " not in self.name])
+                           if not Protein.is_bindingdb(other_pdb_id) and
+                           other_pdb_id != self.pdb_id])
 
 
     def get_sims(self, proteins_list):
-        return [self.get_sim(protein.get_name())
+        return [self.get_sim(protein.get_pdb_id())
                 for protein in proteins_list
                 if protein != self]
 
 
-    def get_examples(self):
-        return self.examples
+    def get_actives(self):
+        return self.actives
 
 
-    def get_name(self):
-        return self.name
-
-
-    def get_id(self):
-        sequence = Protein.get_sequence(self.name)
-        return sequence_to_id_dict[sequence]
+    def get_pdb_id(self):
+        return self.pdb_id
 
 
     def get_len(self):
@@ -190,10 +139,10 @@ class Protein:
 
     def __eq__(self, other):
         if isinstance(other, Protein):
-            return self.name == other.get_name()
+            return self.pdb_id == other.get_pdb_id()
         return False
 
 
     def __repr__(self):
-        return f"{self.name[:4]} {Protein.is_bindingdb(self.name)}"
+        return f"{self.pdb_id[:4]} {Protein.is_bindingdb(self.pdb_id)}"
 

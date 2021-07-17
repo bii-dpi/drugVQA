@@ -10,10 +10,10 @@ def get_fasta(path):
 bindingdb_fasta = get_fasta("BindingDB/contact_map/BindingDB_contactdict")
 dude_fasta = get_fasta("DUDE/contact_map/DUDE_contactdict")
 
-with open("BindingDB/data_pre/fasta_bindingdb", "w") as f:
+with open("Shallow/fastas_bindingdb", "w") as f:
     f.write("\n".join(bindingdb_fasta))
 
-with open("DUDE/data_pre/fasta_data", "w") as f:
+with open("Shallow/fastas_dude", "w") as f:
     f.write("\n".join(dude_fasta))
 
 with open("all_fasta", "w") as f:
