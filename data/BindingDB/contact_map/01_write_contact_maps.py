@@ -42,9 +42,11 @@ def get_distance(coords_1, coords_2):
 def get_distance_matrix(coord_list):
     dist_matrix = np.zeros((len(coord_list), len(coord_list)))
     for i in range(len(coord_list)):
-        for j in range(len(coord_list)):
-            dist_matrix[i, j] = get_distance(coord_list[i],
-                                             coord_list[j])
+        for j in range(i, len(coord_list)):
+            curr_dist = get_distance(coord_list[i],
+                                     coord_list[j])
+            dist_matrix[i, j] = curr_dist
+            dist_matrix[j, i] = curr_dist
     return dist_matrix
 
 
@@ -72,15 +74,14 @@ def save_contact_map(sequence):
 # Get BindingDB sequences and PDB IDs.
 sequence_mapping = pd.read_pickle("sequence_to_id_map.pkl")
 bindingdb_sequences = sequence_mapping.keys()
+print(len(bindingdb_sequences))
 bindingdb_sequences = [sequence for sequence in bindingdb_sequences
                         if sequence_mapping[sequence] + "_cm" not in
                         os.listdir()]
 print(len(bindingdb_sequences))
 
+
 if __name__ == "__main__":
     with ProcessPoolExecutor() as executor:
         results = executor.map(save_contact_map, bindingdb_sequences)
-"""
-for sequence in progressbar(bindingdb_sequences):
-    save_contact_map(sequence)
-"""
+
