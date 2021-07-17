@@ -7,7 +7,6 @@ import pandas as pd
 from urllib.request import urlopen
 
 
-INACTIVE_THRESHOLD = 25
 SHARING_DISSIM_THRESHOLD = 20
 SHUFFLE_SEED = 12345
 
@@ -61,8 +60,6 @@ class Protein:
         self.sequence = Protein.get_sequence(name)
         # Group membership
         self.is_bindingdb = Protein.is_bindingdb(name)
-        ## If is DUD-E, _cm will not exist.
-        self.cm_exists = Protein.cm_exists(name)
         # Other data
         for key in sim_dict.keys():
             if f"{key} " in name:
@@ -92,16 +89,6 @@ class Protein:
             if key in name or f"{name} " in key:
                 return True
         return False
-
-
-    @staticmethod
-    def cm_exists(name):
-        sequence = Protein.get_sequence(name)
-        try:
-            pdb_id = sequence_to_id_dict[sequence]
-        except:
-            return False
-        return pdb_id in os.listdir("../contact_map/")
 
 
     @staticmethod
@@ -170,31 +157,6 @@ class Protein:
                 if self.sims[other_name] <= SHARING_DISSIM_THRESHOLD]
 
 
-    def add_inactives(self, proteins_list):
-        def modify_actives(other_actives):
-            return [f"{active.split()[0]} {self.sequence} 0"
-                    for active in other_actives]
-
-        for protein in proteins_list:
-            if [name for name in self.get_dissim_names()
-                if f"{name} " in protein.get_name()]:
-                self.examples += modify_actives(protein.get_actives())
-
-
-    # For resampling.
-    def resample_inactives(self):
-        if self.get_ratio() < 50:
-            return None
-
-        inactives = self.get_inactives()
-        np.random.seed(SHUFFLE_SEED)
-        np.random.shuffle(inactives)
-
-        actives = self.get_actives()
-
-        self.examples = actives + inactives[:(len(actives) * 50)]
-
-
     # Miscellaneous getters.
     def get_dude_sim_mean(self):
         return np.nanmean([self.get_sim(other_name) for other_name
@@ -211,20 +173,6 @@ class Protein:
 
     def get_examples(self):
         return self.examples
-
-
-    def get_actives(self):
-        return [example for example in self.examples
-                if int(example.split()[2])]
-
-
-    def get_inactives(self):
-        return [example for example in self.examples
-                if not int(example.split()[2])]
-
-
-    def get_ratio(self):
-        return len(self.get_inactives()) / len(self.get_actives())
 
 
     def get_name(self):
