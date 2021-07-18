@@ -41,4 +41,5 @@ bindingdb_test_examples
 clustering/results/*.pkl
 clustering/results/*.npy
 clustering/data/
-
+features
+data/Shallow/*_examples.csv
