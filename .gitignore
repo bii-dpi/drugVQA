@@ -36,3 +36,4 @@ bindingdb_examples.tsv
 data/Shallow/*.npy
 *.tsv
 data/BindingDB/data_pre/bindingdb_examples.csv
+bindingdb_test_examples

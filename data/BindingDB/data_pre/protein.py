@@ -6,7 +6,7 @@ import pandas as pd
 
 
 SHUFFLE_SEED = 12345
-ILLEGAL_LIST = ["[c-]", "[N@@]", "[Re-]"]
+ILLEGAL_LIST = ["[c-]", "[N@@]", "[Re-]", "[S@@+]", "[S@+]"]
 
 
 def get_dict(path):
