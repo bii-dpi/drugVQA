@@ -85,6 +85,11 @@ def save_features(path):
         mean = features.mean(0)
         std = features.std(0)
         to_exclude = np.where(mean == 0)[0]
+
+        np.save("features_mean.npy", mean)
+        np.save("features_std.npy", std)
+        np.save("features_to_exclude.npy", to_exclude)
+
     features = standardize(features, mean, std, to_exclude)
 
     labels = np.array([example[1] for example in examples],
