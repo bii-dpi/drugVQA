@@ -6,6 +6,6 @@ all_examples = []
 for i in range(1, 4):
     all_examples += get_examples(i)
 
-with open("shallow_training_examples", "w") as f:
+with open("../../Shallow/shallow_training_examples", "w") as f:
     f.write("\n".join(all_examples))
 

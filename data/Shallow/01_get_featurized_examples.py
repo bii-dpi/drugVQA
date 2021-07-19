@@ -55,15 +55,14 @@ def process_example(example):
             example[2]]
 
 
-def standardize(features, mean, std, to_exclude):
+def standardize(features, mean, std):
     for i in range(features.shape[1]):
         features[:, i] = (features[:, i] - mean[i]) / std[i]
-    features = np.delete(features, to_exclude, axis=1)
     return features
 
 
 def save_features(path):
-    global mean, std, to_exclude
+    global mean, std
 
     print(f"Processing {path}")
     # Load examples.
@@ -84,13 +83,8 @@ def save_features(path):
     if mean is None:
         mean = features.mean(0)
         std = features.std(0)
-        to_exclude = np.where(mean == 0)[0]
 
-        np.save("features_mean.npy", mean)
-        np.save("features_std.npy", std)
-        np.save("features_to_exclude.npy", to_exclude)
-
-    features = standardize(features, mean, std, to_exclude)
+    features = standardize(features, mean, std)
 
     labels = np.array([example[1] for example in examples],
                       dtype=float)
@@ -103,7 +97,6 @@ def save_features(path):
 
 
 example_paths = ["shallow_training_examples",
-                 "shallow_validation_examples",
                  "shallow_testing_examples"]
 
 ligand_featurizer = dc.feat.RDKitDescriptors()
@@ -117,7 +110,7 @@ bindingdb_features = load_protein_features("bindingdb_protein_features")
 dude_features = load_protein_features("dude_protein_features")
 
 if __name__ == "__main__":
-    mean, std, to_exclude = None, None, None
+    mean, std= None, None
     for path in progressbar(example_paths):
         features, labels = save_features(path)
 

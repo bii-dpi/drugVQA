@@ -11,11 +11,10 @@ def write_csv(path):
     df = pd.DataFrame(data=data,
                       columns=[f"X{i}" for i in range(features.shape[1])] + \
                               ["Y"])
-    df.to_csv(f"{path}.csv")
+    df.to_csv(f"{path}.csv", index=False)
 
 
 example_paths = ["shallow_training_examples",
-                 "shallow_validation_examples",
                  "shallow_testing_examples"]
 
 [write_csv(path) for path in example_paths]
