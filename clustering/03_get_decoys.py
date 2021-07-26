@@ -90,7 +90,7 @@ if __name__ == "__main__":
         decoy_dict = pd.read_pickle("results/decoy_dict.pkl")
 
     print("Sampling decoy dict...")
-    sampled_dict = {label: np.random.choice(decoy_dict[label], 3)
+    sampled_dict = {label: np.random.choice(decoy_dict[label], 40)
                     for label in range(10000)}
 
     # Where to take decoys from.

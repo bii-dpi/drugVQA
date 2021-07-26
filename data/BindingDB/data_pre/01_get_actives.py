@@ -1,14 +1,17 @@
 import numpy as np
 
 from protein import *
+from concurrent.futures import ProcessPoolExecutor
 
 
 NUM_PROTEINS = -1
-NUM_EXAMPLES = 5000
+NUM_EXAMPLES = -1
 
 
 # Load proteins
-bindingdb_proteins = [Protein(pdb_id) for pdb_id in list(bindingdb_dict.keys())]
+with ProcessPoolExecutor() as executor:
+    bindingdb_proteins = list(executor.map(Protein,
+                                           bindingdb_dict.keys()))
 
 # Select BindingDB proteins to keep.
 dude_sim_means = [protein.get_dude_sim_mean() for protein in bindingdb_proteins]
@@ -43,15 +46,22 @@ print(f"Mean: {np.nanmean(sims):.2f}, std.: {np.nanstd(sims):.2f}, max: {max(sim
 
 
 # Write active SMILES and corr. protein PDB IDs.
+
 all_actives = []
+num_proteins = 0
 for protein in selected_proteins:
-    curr_actives = protein.get_actives()
-    all_actives += [f"{line.split()[0]} {protein.get_pdb_id()}" for line in curr_actives]
+    curr_actives = [f"{line.split()[0]} {protein.get_pdb_id()}"
+                    for line in protein.get_actives()]
+    if len(curr_actives) < 10:
+        continue
+    num_proteins += 1
+    all_actives += curr_actives
 
 np.random.shuffle(all_actives)
 all_actives = all_actives[:NUM_EXAMPLES]
-print(len(all_actives))
+print(f"Number of proteins: {num_proteins}")
+print(f"Number of actives: {len(all_actives)}")
 
-with open(f"../../../../clustering/data/all_actives", "w") as f:
+with open(f"../../../clustering/data/all_actives", "w") as f:
     f.write("\n".join(all_actives))
 

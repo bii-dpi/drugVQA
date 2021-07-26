@@ -2,21 +2,18 @@ import numpy as np
 import pandas as pd
 
 
-def write_csv(path):
-    features = np.load(f"{path}_features.npy")
-    print(features.shape)
-    labels = np.expand_dims(np.load(f"{path}_labels.npy"), axis=1)
-    print(labels.shape)
+def write_df(direction, mode):
+    print(f"Writing {direction}_{mode}_examples.csv")
+    features = np.load(f"{direction}_{mode}_examples_features_proc.npy")
+    labels = np.expand_dims(np.load(f"{direction}_{mode}_examples_labels_proc.npy"), axis=1)
     data = np.concatenate((features, labels), axis=1)
     df = pd.DataFrame(data=data,
                       columns=[f"X{i}" for i in range(features.shape[1])] + \
                               ["Y"])
-    df.to_csv(f"{path}.csv", index=False)
+    df.to_csv(f"{direction}_{mode}_examples.csv", index=False)
 
 
-example_paths = ["shallow_training_examples",
-                 "shallow_testing_examples"]
-
-[write_csv(path) for path in example_paths]
-
+for direction in ["dtb", "btd"]:
+    for mode in ["training", "testing"]:
+        write_df(direction, mode)
 

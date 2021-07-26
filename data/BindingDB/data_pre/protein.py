@@ -4,9 +4,10 @@ import pickle
 import numpy as np
 import pandas as pd
 
+from rdkit import Chem, DataStructs
+
 
 SHUFFLE_SEED = 12345
-ILLEGAL_LIST = ["[c-]", "[N@@]", "[Re-]", "[S@@+]", "[S@+]"]
 
 
 def get_dict(path):
@@ -18,7 +19,7 @@ def get_dict(path):
 
 
 # Data
-bindingdb_examples = pd.read_csv("bindingdb_examples.csv")
+actives = pd.read_pickle("actives.pkl")
 
 bindingdb_dict = get_dict("../contact_map/BindingDB_contactdict")
 dude_dict = get_dict("../../DUDE/contact_map/DUDE_contactdict")
@@ -51,69 +52,41 @@ class Protein:
 
     @staticmethod
     def is_bindingdb(pdb_id):
-        if pdb_id in bindingdb_dict.keys():
-            return True
-        return False
-
-
-    @staticmethod
-    def get_interactivity(nm):
-        try:
-            nm = float(nm)
-        except:
-            if nm is None:
-                return nm
-            if nm.startswith(">") or nm.startswith("<"):
-                return Protein.get_interactivity(nm[1:])
-            else:
-                raise Exception(f"Unknown nM: {nm}")
-
-        if nm <= 1 * 1000:
-            return "1"
-        return None
+        return pdb_id in bindingdb_dict.keys()
 
 
     # Used in setting and adding examples.
     def set_actives(self):
-        def process_row(examples, i):
-            line = (f"{examples.ligand_smiles.iloc[i]} "
-                    f"{examples.target_sequence.iloc[i]}")
-
-            nm = None
-            if not pd.isna(examples.ki.iloc[i]):
-                nm = examples.ki.iloc[i]
-            elif not pd.isna(examples.ic50.iloc[i]):
-                nm = examples.ic50.iloc[i]
-            elif not pd.isna(examples.kd.iloc[i]):
-                nm = examples.kd.iloc[i]
-            elif not pd.isna(examples.ec50.iloc[i]):
-                nm = examples.ec50.iloc[i]
-
-            interactivity = Protein.get_interactivity(nm)
-
-            if interactivity is not None:
-                return f"{line} {interactivity}"
-            else:
-                return ""
+        def process_row(example):
+            return " ".join(example[:2]) + " 1"
 
 
-        def has_illegal(active):
-            smiles_string = active.split()[0]
-            for illegal_element in ILLEGAL_LIST:
-                if illegal_element in smiles_string:
-                    return True
-            return False
+        def get_lig_sim(candidate_active, active):
+             candidate_fprint = Chem.RDKFingerprint(Chem.MolFromSmiles(candidate_active))
+             active_fprint = Chem.RDKFingerprint(Chem.MolFromSmiles(active))
+             return DataStructs.FingerprintSimilarity(candidate_fprint,
+                                                      active_fprint)
 
 
-        self.actives = bindingdb_examples[
-                                bindingdb_examples.\
-                                target_sequence ==
-                                self.sequence
-                              ]
-        self.actives = [process_row(self.actives, i)
-                         for i in range(len(self.actives))]
-        self.actives = [active for active in self.actives
-                         if active and not has_illegal(active)]
+        def get_max_sim(candidate_active, actives_to_keep):
+            if not actives_to_keep:
+                return 0
+            return np.max([get_lig_sim(candidate_active, active)
+                           for active in actives_to_keep])
+
+
+        self.actives = [process_row(active) for active in actives
+                        if active[2] == self.pdb_id]
+
+        np.random.shuffle(self.actives)
+
+        actives_to_keep = []
+        for candidate_active in self.actives:
+            if len(actives_to_keep) == 1000:
+                break
+            if get_max_sim(candidate_active, actives_to_keep) < 0.7:
+                actives_to_keep.append(candidate_active)
+        self.actives = actives_to_keep
 
 
     # Miscellaneous getters.
@@ -154,4 +127,6 @@ class Protein:
 
     def __repr__(self):
         return f"{self.pdb_id} {self.is_bindingdb}"
+
+
 

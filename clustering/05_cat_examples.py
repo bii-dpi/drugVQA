@@ -47,13 +47,14 @@ np.random.shuffle(all_examples)
 
 print(f"Ratio: {np.mean([int(example.split()[2]) for example in all_examples])}")
 print(f"Number of examples: {len(all_examples)}")
+print(f"Number of proteins: {len(np.unique([example.split()[1] for example in all_examples]))}")
 
-with open("results/bindingdb_test_examples", "w") as f:
+with open("results/bindingdb_examples", "w") as f:
     f.write("\n".join(all_examples))
 
-with open("../drugVQA/data/BindingDB/data_pre/bindingdb_test_examples", "w") as f:
+with open("../data/BindingDB/data_pre/bindingdb_examples", "w") as f:
     f.write("\n".join(all_examples))
 
-with open("../drugVQA/data/Shallow/shallow_testing_examples", "w") as f:
+with open("../data/Shallow/bindingdb_examples", "w") as f:
     f.write("\n".join(all_examples))
 

@@ -77,9 +77,9 @@ def train(train_args):
         roce_4 = get_ROCE(all_pred, all_target, 5)
 
         torch.save(attention_model.state_dict(),
-                    f"../model_pkl/DUDE/{train_args['fname_prefix']}{i + 1}.pkl")
+                    f"../model_pkl/{train_args['base']}/{train_args['fname_prefix']}{i + 1}.pkl")
 
-        with open(f"../results/{train_args['fname_prefix']}train_results.csv", "a") as f:
+        with open(f"../results/{train_args['base']}/{train_args['fname_prefix']}train_results.csv", "a") as f:
             f.write((f"{i + 1}, {accuracy}, {recall}, {precision}, {AUC}, {AUPR}, {avg_loss}, "
                         f"{roce_1}, {roce_2}, {roce_3}, {roce_4}\n"))
 

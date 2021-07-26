@@ -63,9 +63,9 @@ model_args["device"] = device
 
 
 # Data
-validate_fold_path = f"../data/BindingDB/data_pre/bindingdb_test_examples"
+validate_fold_path = f"../data/BindingDB/data_pre/bindingdb_examples"
 contact_path = "../data/BindingDB/contact_map"
-contact_dict_path = "../data/BindingDB/contact_map/BindingDB-contactDict"
+contact_dict_path = "../data/BindingDB/contact_map/BindingDB_contactdict"
 seq_contact_dict = getSeqContactDict(contact_path, contact_dict_path,
                                      validate_fold_path)
 

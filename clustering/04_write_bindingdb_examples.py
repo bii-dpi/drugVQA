@@ -38,7 +38,7 @@ with open("data/all_actives", "r") as f:
 all_active_smiles = [line.split() for line in all_active_smiles]
 all_protein_ids = np.unique([line[1] for line in all_active_smiles])
 
-id_to_sequence = pd.read_pickle("../drugVQA/data/BindingDB/contact_map/sequence_to_id_map.pkl")
+id_to_sequence = pd.read_pickle("../data/BindingDB/contact_map/sequence_to_id_map.pkl")
 id_to_sequence = {pdb_id: sequence
                   for sequence, pdb_id in id_to_sequence.items()}
 

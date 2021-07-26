@@ -43,3 +43,11 @@ clustering/results/*.npy
 clustering/data/
 features
 data/Shallow/*_examples.csv
+dtb/
+btd/
+data/Shallow/*_examples
+actives.pkl
+bindingdb_examples
+dude_examples
+*.zip
+actives_intermediate.pkl
