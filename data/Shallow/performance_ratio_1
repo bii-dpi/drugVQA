@@ -1,0 +1,12 @@
+Testing in direction dtb: best quality
+Precision: 0.08837209302325581
+Recall: 0.3275862068965517
+AUPR: 0.15070624042441583
+
+Testing in direction btd: good quality
+Precision: 0.029597965478058548
+Recall: 0.6820448877805486
+AUPR: 0.08589023008492871
+
+
+Performance seemed better when not sampled.

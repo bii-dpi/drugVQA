@@ -10,6 +10,8 @@ from rdkit.Chem.Descriptors import ExactMolWt
 from concurrent.futures import ProcessPoolExecutor
 
 
+RESET_1 = False
+RESET_2 = True
 SHUFFLE_SEED = 12345
 ILLEGAL_LIST = ["[c-]", "[N@@]", "[Re-]", "[S@@+]", "[S@+]"]
 
@@ -34,7 +36,8 @@ def ligand_is_valid(smiles):
         print(f"Unknown SMILES: {smiles}")
         return False
 
-    return ExactMolWt(Chem.MolFromSmiles(smiles)) >= 300
+    weight = ExactMolWt(Chem.MolFromSmiles(smiles))
+    return weight >= 300 and weight <= 500
 
 
 def ligand_has_illegal(smiles):
@@ -81,7 +84,7 @@ def get_affinity(affinities):
             try:
                 return process_affinity(affinity)
             except Exception as e:
-                print(e)
+                print(f"Error processing affinity: {e}")
     return None
 
 
@@ -122,9 +125,12 @@ def get_selected_examples(pdb_id):
         return []
     selected_examples = [example for example in examples
                          if example[2] == pdb_id]
-    all_sequences = np.unique([example[1] for example in selected_examples])
+    all_sequences = np.unique([example[1] for example in
+                               selected_examples]).tolist()
+    """
     all_sequences = [sequence for sequence in all_sequences
                      if len(sequence) < 1000]
+    """
     if not all_sequences:
         return []
 
@@ -140,12 +146,13 @@ def get_selected_examples(pdb_id):
     return selected_seq_examples
 
 
-with open("BindingDB_ChEMBL.tsv", "r") as f:
+with open("BindingDB_All.tsv", "r") as f:
     text = f.readlines()[1:]
 
 
 print(f"Processing {len(text)} raw examples...")
 try:
+    assert not RESET_1
     examples = pd.read_pickle("actives_intermediate.pkl")
 except:
     examples = []
@@ -171,6 +178,7 @@ num_pdb_ids = len(all_pdb_ids)
 print(f"{num_pdb_ids} distinct PDB IDs.")
 
 try:
+    assert not RESET_2
     def get_num_examples(pdb_id, new_examples):
         return len([example for example in new_examples
                     if example[2] == pdb_id])
@@ -185,7 +193,7 @@ except:
     examples_len = []
     for pdb_id in progressbar(all_pdb_ids):
         curr_examples = get_selected_examples(pdb_id)
-        if len(curr_examples) < 1000:
+        if len(curr_examples) < 40:
             num_pdb_ids -= 1
             continue
         examples_len.append(len(curr_examples))

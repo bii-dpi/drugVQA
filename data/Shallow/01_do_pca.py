@@ -5,7 +5,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import RobustScaler
 
 
-RESAMPLING_RATIO = 1
+RESAMPLING_RATIO = 2
 np.random.seed(12345)
 
 
@@ -83,13 +83,13 @@ def save_processed_data(direction):
     print(f"Selecting {training_features.shape[1]} components.")
 
     print("Saving processed features...")
-    np.save(f"{direction}_training_examples_features_proc.npy",
+    np.save(f"{direction}_{RESAMPLING_RATIO}_training_examples_features_proc.npy",
             training_features)
-    np.save(f"{direction}_training_examples_labels_proc.npy",
+    np.save(f"{direction}_{RESAMPLING_RATIO}_training_examples_labels_proc.npy",
             training_labels)
-    np.save(f"{direction}_testing_examples_features_proc.npy",
+    np.save(f"{direction}_{RESAMPLING_RATIO}_testing_examples_features_proc.npy",
             testing_features)
-    np.save(f"{direction}_testing_examples_labels_proc.npy",
+    np.save(f"{direction}_{RESAMPLING_RATIO}_testing_examples_labels_proc.npy",
             testing_labels)
 
     print("Done.")
