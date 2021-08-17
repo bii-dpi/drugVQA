@@ -1,4 +1,4 @@
-model,recall,precision,AUPR
+Model,Recall,Precision,AUPR
 CatBoost,0.610 $\pm$ 0.011,0.046 $\pm$ 0.001,0.105 $\pm$ 0.003
 ExtraTrees,0.356 $\pm$ 0.009,0.108 $\pm$ 0.003,0.124 $\pm$ 0.003
 KNeighbors,0.632 $\pm$ 0.000,0.032 $\pm$ 0.000,0.038 $\pm$ 0.000
