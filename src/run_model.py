@@ -22,46 +22,49 @@ def train(train_args):
         all_target = np.array([])
 
         for lines, contactmap, properties in train_loader:
-            input, seq_lengths, y = make_variables(lines, properties,
-                                                   train_args["smiles_letters"],
-                                                   device)
-            attention_model.hidden_state = attention_model.init_hidden()
-            contactmap = contactmap.to(device)
-            y_pred, att = attention_model(input, contactmap)
-            y_pred = y_pred.clamp(0, 1)
+            try:
+                input, seq_lengths, y = make_variables(lines, properties,
+                                                       train_args["smiles_letters"],
+                                                       device)
+                attention_model.hidden_state = attention_model.init_hidden()
+                contactmap = contactmap.to(device)
+                y_pred, att = attention_model(input, contactmap)
+                y_pred = y_pred.clamp(0, 1)
 
-            #penalization AAT - I
-            if train_args["use_regularizer"]:
-                attT = att.transpose(1, 2)
-                identity = torch.eye(att.size(1))
-                identity = identity.unsqueeze(0).expand(train_loader.batch_size,
-                                                        att.size(1), att.size(1)).to(device)
-                penal = attention_model.l2_matrix_norm(att@attT - identity)
+                #penalization AAT - I
+                if train_args["use_regularizer"]:
+                    attT = att.transpose(1, 2)
+                    identity = torch.eye(att.size(1))
+                    identity = identity.unsqueeze(0).expand(train_loader.batch_size,
+                                                            att.size(1), att.size(1)).to(device)
+                    penal = attention_model.l2_matrix_norm(att@attT - identity)
 
-            correct += torch.eq(torch.round(y_pred.type(torch.DoubleTensor).squeeze(1)),
-                                            y.type(torch.DoubleTensor)).data.sum()
-            all_pred = np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()),
-                                        axis=0)
-            all_target = np.concatenate((all_target, y.data.cpu().numpy()),
-                                        axis=0)
+                correct += torch.eq(torch.round(y_pred.type(torch.DoubleTensor).squeeze(1)),
+                                                y.type(torch.DoubleTensor)).data.sum()
+                all_pred = np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()),
+                                            axis=0)
+                all_target = np.concatenate((all_target, y.data.cpu().numpy()),
+                                            axis=0)
 
-            if train_args["use_regularizer"]:
-                loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
-                                    y.type(torch.DoubleTensor))+(train_args["penal_coeff"] * \
-                                            penal.cpu() / train_loader.batch_size)
-            else:
-                loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
-                                    y.type(torch.DoubleTensor))
+                if train_args["use_regularizer"]:
+                    loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
+                                        y.type(torch.DoubleTensor))+(train_args["penal_coeff"] * \
+                                                penal.cpu() / train_loader.batch_size)
+                else:
+                    loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
+                                        y.type(torch.DoubleTensor))
 
-            total_loss += loss.data
-            optimizer.zero_grad()
-            loss.backward()
+                total_loss += loss.data
+                optimizer.zero_grad()
+                loss.backward()
 
-            # Gradient clipping
-            if train_args["clip"]:
-                torch.nn.utils.clip_grad_norm_(attention_model.parameters(), 0.5)
+                # Gradient clipping
+                if train_args["clip"]:
+                    torch.nn.utils.clip_grad_norm_(attention_model.parameters(), 0.5)
 
-            optimizer.step()
+                optimizer.step()
+            except Exception as e:
+                print(e)
 
         # Across all batches
         accuracy = correct.numpy() / (len(train_loader.dataset))

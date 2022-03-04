@@ -46,14 +46,14 @@ model_args["device"] = device
 
 
 # Data
-train_fold_path = f"../data/BindingDB/data_pre/bindingdb_examples"
+train_fold_path = f"../../get_data/drugVQA/data/btd_training"
 
-contact_path = "../data/BindingDB/contact_map"
-contact_dict_path = "../data/BindingDB/contact_map/BindingDB_contactdict"
+contact_path = "../../get_data/drugVQA/BindingDB"
+contact_dict_path = "../../get_data/drugVQA/BindingDB/BindingDB_contactdict"
 seq_contact_dict = getSeqContactDict(contact_path, contact_dict_path, train_fold_path)
 
-smile_letters_path  = "../data/DUDE/voc/combinedVoc-wholeFour.voc"
-seq_letters_path = "../data/DUDE/voc/sequence.voc"
+smile_letters_path  = "../../get_data/drugVQA/voc/combinedVoc-wholeFour.voc"
+seq_letters_path = "../../get_data/drugVQA/voc/sequence.voc"
 smiles_letters = getLetters(smile_letters_path)
 sequence_letters = getLetters(seq_letters_path)
 N_CHARS_SMI = len(smiles_letters)
