@@ -87,65 +87,37 @@ def train(train_args):
                         f"{roce_1}, {roce_2}, {roce_3}, {roce_4}\n"))
 
 
-def validate(validate_args, epoch):
+def validate(validate_args):
     """Validate the model."""
     device = validate_args["device"]
 
     validate_loader = validate_args["validate_loader"]
-    criterion = validate_args["criterion"]
     attention_model = validate_args["model"]
     attention_model.eval()
 
-    total_loss = 0
-    correct = 0
     all_pred = np.array([])
     all_target = np.array([])
 
-    with torch.no_grad():
-        for lines, contactmap, properties in validate_loader:
-            input, seq_lengths, y = make_variables(lines, properties, validate_args['smiles_letters'], device)
-            attention_model.hidden_state = attention_model.init_hidden()
-            contactmap = contactmap.to(device)
-            y_pred, att = attention_model(input, contactmap)
-            y_pred = y_pred.clamp(0, 1)
+    try:
+        with torch.no_grad():
+            for lines, contactmap, properties in validate_loader:
+                input, seq_lengths, y = make_variables(lines, properties, validate_args['smiles_letters'], device)
+                attention_model.hidden_state = attention_model.init_hidden()
+                contactmap = contactmap.to(device)
+                y_pred, att = attention_model(input, contactmap)
+                y_pred = y_pred.clamp(0, 1)
 
-            #pred = torch.round(y_pred.type(torch.DoubleTensor).squeeze(1))
-            """
-            correct += torch.eq(torch.round(y_pred.type(torch.DoubleTensor).squeeze(1)),
-                                            y.type(torch.DoubleTensor)).data.sum()
-            """
-            correct += torch.eq(torch.round(y_pred.squeeze(1)), y).data.sum()
-            all_pred = np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()), axis = 0)
-            all_target = np.concatenate((all_target, y.data.cpu().numpy()), axis = 0)
+                all_pred = np.concatenate((all_pred, y_pred.data.cpu().squeeze(1).numpy()), axis = 0)
+                all_target = np.concatenate((all_target, y.data.cpu().numpy()), axis = 0)
+    except Exception as e:
+        print(e)
 
-            if validate_args["use_regularizer"]:
-                loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
-                                y.type(torch.DoubleTensor)) + \
-                                        (C * penal.cpu() / validate_loader.batch_size)
-            else:
-                loss = criterion(y_pred.type(torch.DoubleTensor).squeeze(1),
-                                    y.type(torch.DoubleTensor))
-
-            total_loss += loss.data
-
-    accuracy = correct.cpu().numpy() / (len(validate_loader.dataset))
-    recall = metrics.recall_score(all_target, np.round(all_pred))
-    precision = metrics.precision_score(all_target, np.round(all_pred))
-    AUC = metrics.roc_auc_score(all_target, all_pred)
-    AUPR = metrics.average_precision_score(all_target, all_pred)
-    loss = total_loss.item() / len(validate_loader)
-
-    roce_1 = get_ROCE(all_pred, all_target, 0.5)
-    roce_2 = get_ROCE(all_pred, all_target, 1)
-    roce_3 = get_ROCE(all_pred, all_target, 2)
-    roce_4 = get_ROCE(all_pred, all_target, 5)
-
-    np.save(f"../model_pred/{validate_args['fname_prefix']}{epoch}_pred",
-            all_pred)
-    np.save(f"../model_pred/{validate_args['fname_prefix']}{epoch}_target",
-            all_target)
-
-    with open(f"../results/{validate_args['fname_prefix']}validate_results.csv", "a") as f:
-        f.write((f"{epoch}, {accuracy}, {recall}, {precision}, {AUC}, {AUPR}, {loss}, "
-                    f"{roce_1}, {roce_2}, {roce_3}, {roce_4}\n"))
+    rows = [",".join(["direction",
+                      "AUC", "AUPR", "LogAUC", "recall_1", "recall_5",
+                      "recall_10", "recall_25", "recall_50", "EF_1",
+                      "EF_5", "EF_10", "EF_25", "EF_50"])]
+    rows.append(validate_args["direction"] + "," +
+                get_performance(all_target, all_pred))
+    with open(f"../results/{validate_args['fname_prefix']}validate_results.csv", "w") as f:
+        f.write("\n".join(rows))
 

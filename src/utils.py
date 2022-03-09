@@ -4,7 +4,10 @@ import torch
 import numpy as np
 from torch.autograd import Variable
 from torch.utils.data import Dataset, DataLoader
-
+from sklearn.metrics import (roc_auc_score,
+                             precision_recall_curve,
+                             average_precision_score)
+from sklearn.ensemble import ExtraTreesClassifier as XT
 
 
 def create_variable(tensor, device):
@@ -270,4 +273,60 @@ def get_ROCE(predList, targetList, roceRate):
                 break
     roce = (tp1 * n)/(p*fp1)
     return roce
+
+
+
+np.random.seed(12345)
+
+
+def get_data(direction):
+    data = pd.read_csv(f"../../get_data/Shallow/results/"
+                       f"{direction}_testing_examples.csv")
+
+    labels = data.Y
+    features = data.drop(columns="Y")
+
+    return np.array(features.to_numpy(), dtype=float),
+
+
+def get_recall(precisions, recalls, prec_val):
+    precisions = np.abs(np.array(precisions) - prec_val)
+
+    return str(recalls[np.argmin(precisions)])
+
+
+def get_ef(y, prec_val, num_pos):
+    len_to_take = int(len(y) * prec_val)
+
+    return str(np.sum(y[:len_to_take]) / num_pos)
+
+
+def get_log_auc(predictions, y, num_pos):
+    prec_vals = np.arange(1, 101) / 1000
+    recalls = []
+    for prec_val in prec_vals:
+        recalls.append(float(get_ef(y, prec_val, num_pos)))
+
+    return str(np.trapz(y=recalls, x=np.log10(prec_vals)))
+
+
+def get_performance(y, predictions):
+    AUC = roc_auc_score(y, predictions)
+    AUPR = average_precision_score(y, predictions)
+    precisions, recalls, _ = \
+        precision_recall_curve(y, predictions)
+
+    sorted_indices = np.argsort(predictions)[::-1]
+    y = y[sorted_indices]
+    predictions = predictions[sorted_indices]
+    num_pos = np.sum(y)
+
+    results = [str(AUC), str(AUPR), get_log_auc(predictions, y, num_pos)]
+    for prec_val in [0.01, 0.05, 0.1, 0.25, 0.5]:
+        results.append(get_recall(precisions, recalls, prec_val))
+
+    for prec_val in [0.01, 0.05, 0.1, 0.25, 0.5]:
+        results.append(get_ef(y, prec_val, num_pos))
+
+    return ",".join(results)
 

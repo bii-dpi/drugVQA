@@ -47,7 +47,7 @@ model_args["device"] = device
 
 
 # Data
-validate_fold_path = f"../../get_data/drugVQA/dtb_testing"
+validate_fold_path = f"../../get_data/drugVQA/data/dtb_testing"
 contact_path = "../../get_data/drugVQA/BindingDB"
 contact_dict_path = "../../get_data/drugVQA/BindingDB/BindingDB_contactdict"
 seq_contact_dict = getSeqContactDict(contact_path, contact_dict_path,
@@ -63,7 +63,7 @@ N_CHARS_SEQ = len(sequence_letters)
 
 # validate_dataset: [[smile, seq, label],....]    seq_contact_dict:{seq:contactMap,....}
 validate_dataset = getTrainDataSet(validate_fold_path)
-validate_dataset = validate_dataset[:30000]##############################
+validate_dataset = validate_dataset[:100000]
 validate_dataset = ProDataset(dataSet=validate_dataset, seqContactDict=seq_contact_dict)
 validate_loader = DataLoader(dataset=validate_dataset, batch_size=model_args["batch_size"],
                                 drop_last=True)
@@ -73,13 +73,14 @@ validate_loader = DataLoader(dataset=validate_dataset, batch_size=model_args["ba
 validate_args = {}
 
 validate_args['smiles_letters'] = smiles_letters
+validate_args['direction'] = "dtb"
 
 validate_args["epochs"] = 50
 validate_args["validate_loader"] = validate_loader
 validate_args["seq_contact_dict"] = seq_contact_dict
 
-validate_args["model_fname_prefix"] = f"../model_pkl/{SEED_INDEX}_"
-validate_args["fname_prefix"] = f"../results/{SEED_INDEX}_"
+validate_args["model_fname_prefix"] = f"{SEED_INDEX}_50"
+validate_args["fname_prefix"] = f"../results/DUDE/{SEED_INDEX}_"
 validate_args["device"] = device
 
 validate_args["use_regularizer"] = False
@@ -87,10 +88,10 @@ validate_args["penal_coeff"] = 0.03
 validate_args["criterion"] = torch.nn.BCELoss()
 
 
-curr_path = f"../model_pkl/DUDE/{validate_args['model_fname_prefix']}50.pkl"
+curr_path = f"../model_pkl/DUDE/{validate_args['model_fname_prefix']}.pkl"
 validate_args['model'] = DrugVQA(model_args, block=ResidualBlock)
 validate_args['model'].load_state_dict(torch.load(curr_path,
                                         map_location=device))
 validate_args['model'] = validate_args['model'].to(device)
-validate(validate_args, i)
+validate(validate_args)
 
